@@ -59,7 +59,7 @@ class AccessLog implements ServerMiddlewareInterface
         $message = self::commonFormat($request, $response);
 
         if ($this->combined) {
-            $message .= self::combinedFormat($request, $response);
+            $message .= ' '.self::combinedFormat($request);
         }
 
         if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 600) {
@@ -110,14 +110,13 @@ class AccessLog implements ServerMiddlewareInterface
      * This is exactly the same than Common Log, with the addition of two more fields: Referer and User-Agent headers.
      *
      * @param ServerRequestInterface $request
-     * @param ResponseInterface      $response
      *
      * @return string
      */
-    private static function combinedFormat(ServerRequestInterface $request, ResponseInterface $response)
+    private static function combinedFormat(ServerRequestInterface $request)
     {
         return sprintf(
-            ' "%s" "%s"',
+            '"%s" "%s"',
             $request->getHeaderLine('Referer'),
             $request->getHeaderLine('User-Agent')
         );
