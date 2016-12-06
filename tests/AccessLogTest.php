@@ -4,10 +4,7 @@ namespace Middlewares\Tests;
 
 use Middlewares\AccessLog;
 use Middlewares\Utils\Dispatcher;
-use Middlewares\Utils\CallableMiddleware;
-use Zend\Diactoros\ServerRequest;
-use Zend\Diactoros\Response;
-use Zend\Diactoros\Uri;
+use Middlewares\Utils\Factory;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -18,14 +15,11 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
         $logs = fopen('php://temp', 'r+');
         $logger = new Logger('test');
         $logger->pushHandler(new StreamHandler($logs));
-        $request = (new ServerRequest())
-            ->withUri(new Uri('http://domain.com/user/oscarotero/35'));
+
+        $request = Factory::createServerRequest([], 'GET', 'http://domain.com/user/oscarotero/35');
 
         $response = (new Dispatcher([
             new AccessLog($logger),
-            new CallableMiddleware(function () {
-                return new Response();
-            }),
         ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
