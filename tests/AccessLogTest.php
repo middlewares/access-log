@@ -18,9 +18,9 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
 
         $request = Factory::createServerRequest([], 'GET', 'http://domain.com/user/oscarotero/35');
 
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             new AccessLog($logger),
-        ]))->dispatch($request);
+        ], $request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         rewind($logs);
