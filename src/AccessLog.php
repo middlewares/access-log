@@ -4,11 +4,11 @@ namespace Middlewares;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
-use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Psr\Log\LoggerInterface;
 
-class AccessLog implements ServerMiddlewareInterface
+class AccessLog implements MiddlewareInterface
 {
     /**
      * @var LoggerInterface The router container
