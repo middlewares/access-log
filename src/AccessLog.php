@@ -21,6 +21,11 @@ class AccessLog implements MiddlewareInterface
     private $combined = false;
 
     /**
+     * @var bool
+     */
+    private $vhost = false;
+
+    /**
      * Set the LoggerInterface instance.
      *
      * @param LoggerInterface $logger
@@ -45,6 +50,20 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
+     * Whether prepend the vhost info to the log record.
+     *
+     * @param bool $vhost
+     *
+     * @return self
+     */
+    public function vhost($vhost = true)
+    {
+        $this->vhost = $vhost;
+
+        return $this;
+    }
+
+    /**
      * Process a server request and return a response.
      *
      * @param ServerRequestInterface $request
@@ -56,7 +75,13 @@ class AccessLog implements MiddlewareInterface
     {
         $response = $delegate->process($request);
 
-        $message = self::commonFormat($request, $response);
+        $message = '';
+
+        if ($this->vhost) {
+            $message .= self::vhostPrefix($request, $response);
+        }
+
+        $message .= self::commonFormat($request, $response);
 
         if ($this->combined) {
             $message .= ' '.self::combinedFormat($request);
@@ -69,6 +94,31 @@ class AccessLog implements MiddlewareInterface
         }
 
         return $response;
+    }
+
+    /**
+     * Generates the Virtual Host prefix
+     * https://httpd.apache.org/docs/2.4/logs.html#virtualhost
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface      $response
+     *
+     * @return string
+     */
+    private static function vhostPrefix(ServerRequestInterface $request, ResponseInterface $response)
+    {
+        $host = $request->hasHeader('Host') ? $request->getHeaderLine('Host') : $request->getUri()->getHost();
+
+        if ('' === $host) {
+            return '';
+        }
+
+        $port = $request->getUri()->getPort();
+        if (null === $port) {
+            $port = 'http' === $request->getUri()->getScheme() ? 80 : 443;
+        }
+
+        return sprintf('%s:%s ', $host, $port);
     }
 
     /**
