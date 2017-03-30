@@ -78,7 +78,7 @@ class AccessLog implements MiddlewareInterface
         $message = '';
 
         if ($this->vhost) {
-            $message .= self::vhostPrefix($request, $response);
+            $message .= self::vhostPrefix($request);
         }
 
         $message .= self::commonFormat($request, $response);
@@ -101,11 +101,10 @@ class AccessLog implements MiddlewareInterface
      * https://httpd.apache.org/docs/2.4/logs.html#virtualhost
      *
      * @param ServerRequestInterface $request
-     * @param ResponseInterface      $response
      *
      * @return string
      */
-    private static function vhostPrefix(ServerRequestInterface $request, ResponseInterface $response)
+    private static function vhostPrefix(ServerRequestInterface $request)
     {
         $host = $request->hasHeader('Host') ? $request->getHeaderLine('Host') : $request->getUri()->getHost();
 
