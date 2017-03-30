@@ -27,7 +27,7 @@
         "zendframework/zend-diactoros": "^1.3",
         "friendsofphp/php-cs-fixer": "^2.0",
         "squizlabs/php_codesniffer": "^2.7",
-        "middlewares/utils": "~0.8",
+        "middlewares/utils": "~0.11",
         "monolog/monolog": "^1.21"
     },
     "autoload": {
