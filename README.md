@@ -50,6 +50,10 @@ The logger object used to store the logs.
 
 To use the *Combined Log* format instead the *Common Log* format. The *Combined Log* format is exactly the same than *Common Log,* with the addition of two more fields: `Referer` and `User-Agent` headers.
 
+#### `vhost($vhost = true)`
+
+To prepend the virtual host info to the log record. [more info](https://httpd.apache.org/docs/2.4/logs.html#virtualhost)
+
 ---
 
 Please see [CHANGELOG](CHANGELOG.md) for more information about recent changes and [CONTRIBUTING](CONTRIBUTING.md) for contributing details.
