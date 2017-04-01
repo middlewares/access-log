@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+ * Write dash in identd position
+
 ## [0.4.0] - 2017-03-30
 
 ### Added
@@ -28,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 First version
 
+[Unreleased]: https://github.com/middlewares/access-log/compare/v0.4.0...HEAD
 [0.4.0]: https://github.com/middlewares/access-log/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/middlewares/access-log/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/middlewares/access-log/compare/v0.1.0...v0.2.0

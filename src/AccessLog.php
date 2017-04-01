@@ -124,8 +124,6 @@ class AccessLog implements MiddlewareInterface
      * Generates a message using the Apache's Common Log format
      * https://httpd.apache.org/docs/2.4/logs.html#accesslog.
      *
-     * Note: The user identifier (identd) is ommited intentionally
-     *
      * @param ServerRequestInterface $request
      * @param ResponseInterface      $response
      *
@@ -141,7 +139,7 @@ class AccessLog implements MiddlewareInterface
         }
 
         return sprintf(
-            '%s %s [%s] "%s %s %s/%s" %d %d',
+            '%s - %s [%s] "%s %s %s/%s" %d %d',
             $ip,
             $request->getUri()->getUserInfo() ?: '-',
             strftime('%d/%b/%Y:%H:%M:%S %z'),
