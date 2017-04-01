@@ -28,9 +28,14 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
 
         rewind($logs);
 
-        $str = stream_get_contents($logs);
+        $string = stream_get_contents($logs);
 
-        $this->assertRegExp('#.* test\.INFO\: .* "GET /user/oscarotero/35 HTTP/1\.1" 200 0.*#', $str);
-        $this->assertRegExp('#.* test\.INFO\: domain\.com\:80 .* "GET /user/oscarotero/35 HTTP/1\.1" 200 0.*#', $str);
+        $string = preg_replace('/\[[^\]]+\]/', '[date]', trim($string));
+        $expect = <<<EOT
+[date] test.INFO: - - [date] "GET /user/oscarotero/35 HTTP/1.1" 200 0 [] []
+[date] test.INFO: domain.com:80 - - [date] "GET /user/oscarotero/35 HTTP/1.1" 200 0 [] []
+EOT;
+
+        $this->assertEquals($expect, $string);
     }
 }
