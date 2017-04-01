@@ -132,7 +132,7 @@ class AccessLog implements MiddlewareInterface
     private static function commonFormat(ServerRequestInterface $request, ResponseInterface $response)
     {
         $server = $request->getServerParams();
-        $ip = null;
+        $ip = '-';
 
         if (!empty($server['REMOTE_ADDR']) && filter_var($server['REMOTE_ADDR'], FILTER_VALIDATE_IP)) {
             $ip = $server['REMOTE_ADDR'];
