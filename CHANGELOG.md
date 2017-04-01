@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
  * Write dash in identd position
  * Write dash on missing ip
- * Fixed missing path
+ * Forced a `/` is the uri path is empty
 
 ## [0.4.0] - 2017-03-30
 
