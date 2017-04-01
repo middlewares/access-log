@@ -144,7 +144,7 @@ class AccessLog implements MiddlewareInterface
             $request->getUri()->getUserInfo() ?: '-',
             strftime('%d/%b/%Y:%H:%M:%S %z'),
             strtoupper($request->getMethod()),
-            $request->getUri()->getPath(),
+            $request->getUri()->getPath() ?: '/',
             strtoupper($request->getUri()->getScheme()),
             $request->getProtocolVersion(),
             $response->getStatusCode(),
