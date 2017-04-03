@@ -54,6 +54,21 @@ To use the *Combined Log* format instead the *Common Log* format. The *Combined 
 
 To prepend the virtual host info to the log record. [more info](https://httpd.apache.org/docs/2.4/logs.html#virtualhost)
 
+#### `ipAttribute(string $ipAttribute)`
+
+By default uses the `REMOTE_ADDR` server parameter to get the client ip. This option allows to use a request attribute. Useful to combine with any ip detection middleware, for example [client-ip](https://github.com/middlewares/client-ip):
+
+```php
+$dispatcher = new Dispatcher([
+    //detect the client ip and save it in client-ip attribute
+    new Middlewares\ClientIP(),
+
+    //use that attribute
+    (new Middlewares\AccessLog($logger))
+        ->ipAttribute('client-ip')
+]);
+```
+
 ---
 
 Please see [CHANGELOG](CHANGELOG.md) for more information about recent changes and [CONTRIBUTING](CONTRIBUTING.md) for contributing details.
