@@ -139,13 +139,12 @@ class AccessLog implements MiddlewareInterface
         }
 
         return sprintf(
-            '%s - %s [%s] "%s %s %s/%s" %d %d',
+            '%s - %s [%s] "%s %s HTTP/%s" %d %d',
             $ip,
             $request->getUri()->getUserInfo() ?: '-',
             strftime('%d/%b/%Y:%H:%M:%S %z'),
             strtoupper($request->getMethod()),
             $request->getUri()->getPath() ?: '/',
-            strtoupper($request->getUri()->getScheme()),
             $request->getProtocolVersion(),
             $response->getStatusCode(),
             $response->getBody()->getSize()
