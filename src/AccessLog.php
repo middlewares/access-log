@@ -139,7 +139,7 @@ class AccessLog implements MiddlewareInterface
         }
 
         return sprintf(
-            '%s - %s [%s] "%s %s HTTP/%s" %d %d',
+            '%s - %s [%s] "%s %s HTTP/%s" %d %s',
             $ip,
             $request->getUri()->getUserInfo() ?: '-',
             strftime('%d/%b/%Y:%H:%M:%S %z'),
@@ -147,7 +147,7 @@ class AccessLog implements MiddlewareInterface
             $request->getUri()->getPath() ?: '/',
             $request->getProtocolVersion(),
             $response->getStatusCode(),
-            $response->getBody()->getSize()
+            $response->getBody()->getSize() ?: '-'
         );
     }
 
