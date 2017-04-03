@@ -19,7 +19,7 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
         $request = Factory::createServerRequest([
             'REMOTE_ADDR' => '0.0.0.0'
         ], 'GET', 'http://domain.com/user/oscarotero/35');
-        $request2 = Factory::createServerRequest([], 'POST', 'http://domain.com');
+        $request2 = Factory::createServerRequest([], 'POST', 'https://domain.com');
 
         Dispatcher::run([
             new AccessLog($logger),
@@ -27,6 +27,9 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
 
         Dispatcher::run([
             (new AccessLog($logger))->vhost(),
+            function () {
+                echo 'some content';
+            }
         ], $request2);
 
         rewind($logs);
@@ -36,7 +39,7 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
         $string = preg_replace('/\[[^\]]+\]/', '[date]', trim($string));
         $expect = <<<EOT
 [date] test.INFO: 0.0.0.0 - - [date] "GET /user/oscarotero/35 HTTP/1.1" 200 - [] []
-[date] test.INFO: domain.com:80 - - - [date] "POST / HTTP/1.1" 200 - [] []
+[date] test.INFO: domain.com:443 - - - [date] "POST / HTTP/1.1" 200 12 [] []
 EOT;
 
         $this->assertEquals($expect, $string);
