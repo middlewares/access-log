@@ -26,6 +26,11 @@ class AccessLog implements MiddlewareInterface
     private $vhost = false;
 
     /**
+     * @var string|null
+     */
+    private $ipAttribute;
+
+    /**
      * Set the LoggerInterface instance.
      *
      * @param LoggerInterface $logger
@@ -64,6 +69,19 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
+     * Set the attribute name to get the client ip.
+     *
+     * @param string $ipAttribute
+     *
+     * @return self
+     */
+    public function ipAttribute($ipAttribute)
+    {
+        $this->ipAttribute = $ipAttribute;
+        return $this;
+    }
+
+    /**
      * Process a server request and return a response.
      *
      * @param ServerRequestInterface $request
@@ -78,13 +96,13 @@ class AccessLog implements MiddlewareInterface
         $message = '';
 
         if ($this->vhost) {
-            $message .= self::vhostPrefix($request);
+            $message .= $this->vhostPrefix($request);
         }
 
-        $message .= self::commonFormat($request, $response);
+        $message .= $this->commonFormat($request, $response);
 
         if ($this->combined) {
-            $message .= ' '.self::combinedFormat($request);
+            $message .= ' '.$this->combinedFormat($request);
         }
 
         if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 600) {
@@ -104,7 +122,7 @@ class AccessLog implements MiddlewareInterface
      *
      * @return string
      */
-    private static function vhostPrefix(ServerRequestInterface $request)
+    private function vhostPrefix(ServerRequestInterface $request)
     {
         $host = $request->hasHeader('Host') ? $request->getHeaderLine('Host') : $request->getUri()->getHost();
 
@@ -121,6 +139,27 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
+     * Get the client ip.
+     *
+     * @param ServerRequestInterface $request
+     *
+     * @return string
+     */
+    private function getIp(ServerRequestInterface $request)
+    {
+        if ($this->ipAttribute !== null) {
+            return $request->getAttribute($this->ipAttribute);
+        }
+
+        $server = $request->getServerParams();
+        if (!empty($server['REMOTE_ADDR']) && filter_var($server['REMOTE_ADDR'], FILTER_VALIDATE_IP)) {
+            return $server['REMOTE_ADDR'];
+        }
+
+        return '-';
+    }
+
+    /**
      * Generates a message using the Apache's Common Log format
      * https://httpd.apache.org/docs/2.4/logs.html#accesslog.
      *
@@ -129,18 +168,11 @@ class AccessLog implements MiddlewareInterface
      *
      * @return string
      */
-    private static function commonFormat(ServerRequestInterface $request, ResponseInterface $response)
+    private function commonFormat(ServerRequestInterface $request, ResponseInterface $response)
     {
-        $server = $request->getServerParams();
-        $ip = '-';
-
-        if (!empty($server['REMOTE_ADDR']) && filter_var($server['REMOTE_ADDR'], FILTER_VALIDATE_IP)) {
-            $ip = $server['REMOTE_ADDR'];
-        }
-
         return sprintf(
             '%s - %s [%s] "%s %s HTTP/%s" %d %s',
-            $ip,
+            $this->getIp($request),
             $request->getUri()->getUserInfo() ?: '-',
             strftime('%d/%b/%Y:%H:%M:%S %z'),
             strtoupper($request->getMethod()),
@@ -159,7 +191,7 @@ class AccessLog implements MiddlewareInterface
      *
      * @return string
      */
-    private static function combinedFormat(ServerRequestInterface $request)
+    private function combinedFormat(ServerRequestInterface $request)
     {
         return sprintf(
             '"%s" "%s"',
