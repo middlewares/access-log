@@ -35,8 +35,8 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
 
         $string = preg_replace('/\[[^\]]+\]/', '[date]', trim($string));
         $expect = <<<EOT
-[date] test.INFO: 0.0.0.0 - - [date] "GET /user/oscarotero/35 HTTP/1.1" 200 0 [] []
-[date] test.INFO: domain.com:80 - - - [date] "POST / HTTP/1.1" 200 0 [] []
+[date] test.INFO: 0.0.0.0 - - [date] "GET /user/oscarotero/35 HTTP/1.1" 200 - [] []
+[date] test.INFO: domain.com:80 - - - [date] "POST / HTTP/1.1" 200 - [] []
 EOT;
 
         $this->assertEquals($expect, $string);
