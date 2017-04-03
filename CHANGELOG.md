@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+ * Option to read client ip from attribute
+
 ### Fixed
 
 * Fixed protocol string
