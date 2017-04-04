@@ -10,10 +10,6 @@ use Psr\Log\LoggerInterface;
 
 class AccessLog implements MiddlewareInterface
 {
-    const FORMAT_COMMON = 1;
-    const FORMAT_COMBINED = 2;
-    const FORMAT_VHOST = 4;
-
     /**
      * @var LoggerInterface The router container
      */
