@@ -195,8 +195,8 @@ class AccessLog implements MiddlewareInterface
     {
         return sprintf(
             '"%s" "%s"',
-            $request->getHeaderLine('Referer'),
-            $request->getHeaderLine('User-Agent')
+            $request->getHeaderLine('Referer') ?: '-',
+            $request->getHeaderLine('User-Agent') ?: '-'
         );
     }
 }
