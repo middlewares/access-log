@@ -10,6 +10,10 @@ use Psr\Log\LoggerInterface;
 
 class AccessLog implements MiddlewareInterface
 {
+    const FORMAT_COMMON = 1;
+    const FORMAT_COMBINED = 2;
+    const FORMAT_VHOST = 4;
+
     /**
      * @var LoggerInterface The router container
      */
@@ -92,18 +96,7 @@ class AccessLog implements MiddlewareInterface
     public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
         $response = $delegate->process($request);
-
-        $message = '';
-
-        if ($this->vhost) {
-            $message .= $this->vhostPrefix($request);
-        }
-
-        $message .= $this->commonFormat($request, $response);
-
-        if ($this->combined) {
-            $message .= ' '.$this->combinedFormat($request);
-        }
+        $message = strtr($this->getFormat(), $this->getData($request, $response));
 
         if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 600) {
             $this->logger->error($message);
@@ -115,6 +108,23 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
+     * Generates and returns the message format
+     *
+     * @return string
+     */
+    private function getFormat()
+    {
+        $message = $this->vhost ? '%v' : '%h';
+        $message .= ' %l %u %t "%m %U%q %H" %>s %b';
+
+        if ($this->combined) {
+            $message .= ' "%{Referer}" "%{User-Agent}"';
+        }
+
+        return $message;
+    }
+
+    /**
      * Generates the Virtual Host prefix
      * https://httpd.apache.org/docs/2.4/logs.html#virtualhost
      *
@@ -122,20 +132,21 @@ class AccessLog implements MiddlewareInterface
      *
      * @return string
      */
-    private function vhostPrefix(ServerRequestInterface $request)
+    private function getVirtualHost(ServerRequestInterface $request)
     {
         $host = $request->hasHeader('Host') ? $request->getHeaderLine('Host') : $request->getUri()->getHost();
 
         if ('' === $host) {
-            return '';
+            return '-';
         }
 
         $port = $request->getUri()->getPort();
+
         if (null === $port) {
             $port = 'http' === $request->getUri()->getScheme() ? 80 : 443;
         }
 
-        return sprintf('%s:%s ', $host, $port);
+        return sprintf('%s:%s', $host, $port);
     }
 
     /**
@@ -160,43 +171,29 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
-     * Generates a message using the Apache's Common Log format
-     * https://httpd.apache.org/docs/2.4/logs.html#accesslog.
+     * Returns the access data used to compose the log message
      *
      * @param ServerRequestInterface $request
-     * @param ResponseInterface      $response
+     * @param ResponseInterface $response
      *
-     * @return string
+     * @return array
      */
-    private function commonFormat(ServerRequestInterface $request, ResponseInterface $response)
+    private function getData(ServerRequestInterface $request, ResponseInterface $response)
     {
-        return sprintf(
-            '%s - %s [%s] "%s %s HTTP/%s" %d %s',
-            $this->getIp($request),
-            $request->getUri()->getUserInfo() ?: '-',
-            strftime('%d/%b/%Y:%H:%M:%S %z'),
-            strtoupper($request->getMethod()),
-            $request->getUri()->getPath() ?: '/',
-            $request->getProtocolVersion(),
-            $response->getStatusCode(),
-            $response->getBody()->getSize() ?: '-'
-        );
-    }
-
-    /**
-     * Generates a message using the Apache's Combined Log format
-     * This is exactly the same than Common Log, with the addition of two more fields: Referer and User-Agent headers.
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
-     */
-    private function combinedFormat(ServerRequestInterface $request)
-    {
-        return sprintf(
-            '"%s" "%s"',
-            $request->getHeaderLine('Referer') ?: '-',
-            $request->getHeaderLine('User-Agent') ?: '-'
-        );
+        return [
+            '%v' => $this->getVirtualHost($request),
+            '%h' => $this->getIp($request),
+            '%l' => '-',
+            '%u' => $request->getUri()->getUserInfo() ?: '-',
+            '%t' => '['.strftime('%d/%b/%Y:%H:%M:%S %z').']',
+            '%m' => strtoupper($request->getMethod()),
+            '%U' => $request->getUri()->getPath() ?: '/',
+            '%q' => $request->getUri()->getQuery(),
+            '%H' => 'HTTP/'.$request->getProtocolVersion(),
+            '%>s' => $response->getStatusCode(),
+            '%b' => $response->getBody()->getSize() ?: '-',
+            '%{Referer}' => $response->getHeaderLine('Referer') ?: '-',
+            '%{User-Agent}' => $response->getHeaderLine('User-Agent') ?: '-',
+        ];
     }
 }
