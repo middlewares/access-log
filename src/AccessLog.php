@@ -140,91 +140,111 @@ class AccessLog implements MiddlewareInterface
      *
      * @return string
      */
-    private function replaceConstantDirectives($format, ServerRequestInterface $request, ResponseInterface $response, $begin, $end)
-    {
+    private function replaceConstantDirectives(
+        $format,
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $begin,
+        $end
+    ) {
         return preg_replace_callback(
             '/%(?:[<>])?([%aABbDfhHklLmpPqrRstTuUvVXIOS])/',
-            function(array $matches) use($request, $response, $begin, $end) {
+            function (array $matches) use ($request, $response, $begin, $end) {
                 switch ($matches[1]) {
                     case '%':
-                        $result = '%';
-                        break;
+                        return '%';
+
                     case 'a':
-                        $result = $this->getClientIp($request);
-                        break;
+                        return $this->getClientIp($request);
+
                     case 'A':
-                        $result = $this->getServerIp($request);
-                        break;
+                        return $this->getServerIp($request);
+
                     case 'B':
-                        $result = (string) $response->getBody()->getSize() ?: '0';
-                        break;
+                        return (string) $response->getBody()->getSize() ?: '0';
+
                     case 'b':
-                        $result = (string) $response->getBody()->getSize() ?: '-';
-                        break;
+                        return (string) $response->getBody()->getSize() ?: '-';
+
                     case 'D':
-                        $result = round(($end - $begin) * 1E6);
-                        break;
+                        return round(($end - $begin) * 1E6);
+
                     case 'f':
-                        $result = $request->getServerParams()['PHP_SELF'];
-                        break;
+                        return $request->getServerParams()['PHP_SELF'];
+
                     case 'h':
                         $result = $this->getConnectionIp($request);
-                        if (
-                            $this->hostnameLookups
+
+                        if ($this->hostnameLookups
                             && filter_var($request->getServerParams()['SERVER_ADDR'], FILTER_VALIDATE_IP)
                         ) {
-                            $result = gethostbyaddr($result);
+                            return gethostbyaddr($result);
                         }
-                        break;
+
+                        return $result;
+
                     case 'H':
-                        $result = 'HTTP/' . $request->getProtocolVersion();
-                        break;
+                        return 'HTTP/' . $request->getProtocolVersion();
+
                     case 'm':
-                        $result = $request->getMethod();
-                        break;
+                        return $request->getMethod();
+
                     case 'p':
-                        $result = (string) $this->getPort($request);
-                        break;
+                        return (string) $this->getPort($request);
+
                     case 'q':
                         $query = $request->getUri()->getQuery();
-                        $result = '' !== $query ? '?'.$query : '';
-                        break;
+                        return '' !== $query ? '?'.$query : '';
+
                     case 'r':
-                        $result = $this->getRequestFirstLine($request);
-                        break;
+                        return $this->getRequestFirstLine($request);
+
                     case 's':
-                        $result = (string) $response->getStatusCode();
-                        break;
+                        return (string) $response->getStatusCode();
+
                     case 't':
-                        $result = '['.$this->getTimeInFormat($begin, '%d/%b/%Y:%H:%M:%S %z').']';
-                        break;
+                        return '['.$this->getTimeInFormat($begin, '%d/%b/%Y:%H:%M:%S %z').']';
+
                     case 'T':
-                        $result = round($end - $begin);
+                        return round($end - $begin);
+
                     case 'u':
-                        $result = isset($request->getServerParams()['REMOTE_USER']) ? $request->getServerParams()['REMOTE_USER'] : '-';
-                        break;
+                        $server = $request->getServerParams();
+                        return isset($server['REMOTE_USER']) ? $server['REMOTE_USER'] : '-';
+
                     case 'U':
-                        $result = $request->getUri()->getPath()?:'/';
-                        break;
+                        return $request->getUri()->getPath() ?: '/';
+
                     case 'v':
-                        $result = $this->getVirtualHost($request);
-                        break;
+                        return $this->getVirtualHost($request);
+
                     case 'V':
-                        $result = isset($request->getServerParams()['SERVER_NAME']) ? $request->getServerParams()['SERVER_NAME'] : $this->getVirtualHost($request);
-                        break;
+                        $server = $request->getServerParams();
+
+                        if (isset($server['SERVER_NAME'])) {
+                            return $server['SERVER_NAME'];
+                        }
+
+                        return $this->getVirtualHost($request);
+
                     case 'I':
                         $size = $this->getRequestSize($request);
-                        $result = null !== $size ? (string) $size : '-';
-                        break;
+                        return null !== $size ? (string) $size : '-';
+
                     case 'O':
                         $size = $this->getResponseSize($response);
-                        $result = null !== $size ? (string) $size : '-';
-                        break;
+                        return null !== $size ? (string) $size : '-';
+
                     case 'S':
                         $requestSize = $this->getRequestSize($request);
                         $responseSize = $this->getRequestSize($response);
-                        $result = null !== $requestSize && null !== $responseSize ? (string) ($requestSize + $responseSize) : '-';
-                        break;
+
+                        if (null !== $requestSize && null !== $responseSize) {
+                            return (string) ($requestSize + $responseSize);
+                        }
+
+                        return '-';
+
                     //NOT IMPLEMENTED
                     case 'k':
                     case 'l':
@@ -233,11 +253,8 @@ class AccessLog implements MiddlewareInterface
                     case 'R':
                     case 'X':
                     default:
-                        $result = '-';
-                        break;
+                        return '-';
                 }
-
-                return $result;
             },
             $format
         );
@@ -252,74 +269,74 @@ class AccessLog implements MiddlewareInterface
      *
      * @return string
      */
-    private function replaceVariableDirectives($format, ServerRequestInterface $request, ResponseInterface $response, $begin, $end)
-    {
+    private function replaceVariableDirectives(
+        $format,
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $begin,
+        $end
+    ) {
         return preg_replace_callback(
             '/%(?:[<>])?{([^}]+)}([aCeinopPtT])/',
-            function(array $matches) use($request, $response, $begin, $end) {
+            function (array $matches) use ($request, $response, $begin, $end) {
                 switch ($matches[2]) {
                     case 'a':
-                        $result = 'c' === $matches[1] ? $this->getConnectionIp($request) : '-';
-                        break;
+                        return 'c' === $matches[1] ? $this->getConnectionIp($request) : '-';
+
                     case 'C':
-                        $result = isset($request->getCookieParams()[$matches[1]]) ? $request->getCookieParams()[$matches[1]] : '-';
-                        break;
+                        $cookies = $request->getCookieParams();
+                        return isset($cookies[$matches[1]]) ? $cookies[$matches[1]] : '-';
+
                     case 'e':
-                        $result = getenv($matches[1]) ?: '-';
-                        break;
+                        return getenv($matches[1]) ?: '-';
+
                     case 'i':
-                        $result = $request->getHeaderLine($matches[1]) ?: '-';
-                        break;
+                        return $request->getHeaderLine($matches[1]) ?: '-';
+
                     case 'o':
-                        $result = $response->getHeaderLine($matches[1]) ?: '-';
-                        break;
+                        return $response->getHeaderLine($matches[1]) ?: '-';
+
                     case 'p':
                         switch ($matches[1]) {
                             case 'canonical':
                             case 'local':
-                                $result = $this->getPort($request);
-                            default:
-                                $result = '-';
+                                return $this->getPort($request);
                         }
-                        break;
+                        return '-';
+
                     case 't':
                         $parts = split(':', $matches[1], 2);
+
                         if (2 === count($parts)) {
                             if ('begin' === $parts[0]) {
-                                $result = $this->getTimeInFormat($begin, $parts[1]);
-                                break;
+                                return $this->getTimeInFormat($begin, $parts[1]);
                             }
+
                             if ('end' === $parts[0]) {
-                                $result = $this->getTimeInFormat($end, $parts[1]);
-                                break;
+                                return $this->getTimeInFormat($end, $parts[1]);
                             }
                         }
-                        $result = '-';
-                        break;
+                        return '-';
+
                     case 'T':
-                        switch($matches[1]) {
+                        switch ($matches[1]) {
                             case 'us':
-                                $result = round(($end - $begin) * 1E6);
-                                break;
+                                return round(($end - $begin) * 1E6);
+
                             case 'ms':
-                                $result = round(($end - $begin) * 1E3);
-                                break;
+                                return round(($end - $begin) * 1E3);
+
                             case 's':
-                                $result = round($end - $begin);
-                                break;
-                            default:
-                                $result = '-';
-                                break;
+                                return round($end - $begin);
                         }
+                        return '-';
+
                     //NOT IMPLEMENTED
                     case 'n':
                     case 'P':
                     default:
-                        $result = '-';
-                        break;
+                        return '-';
                 }
-
-                return $result;
             },
             $format
         );
@@ -349,7 +366,7 @@ class AccessLog implements MiddlewareInterface
      */
     private function getPort(ServerRequestInterface $request)
     {
-        return $request->getUri()->getPort() ?: ('https' === $request->getUri()->getScheme() ? 443 : 80 );
+        return $request->getUri()->getPort() ?: ('https' === $request->getUri()->getScheme() ? 443 : 80);
     }
 
     private function getClientIp(ServerRequestInterface $request)
@@ -363,8 +380,7 @@ class AccessLog implements MiddlewareInterface
 
     private function getConnectionIp(ServerRequestInterface $request)
     {
-        if (
-            !empty($request->getServerParams()['REMOTE_ADDR'])
+        if (!empty($request->getServerParams()['REMOTE_ADDR'])
             && filter_var($request->getServerParams()['REMOTE_ADDR'], FILTER_VALIDATE_IP)
         ) {
             return $request->getServerParams()['REMOTE_ADDR'];
@@ -375,8 +391,7 @@ class AccessLog implements MiddlewareInterface
 
     private function getServerIp(ServerRequestInterface $request)
     {
-        if (
-            !empty($request->getServerParams()['SERVER_ADDR'])
+        if (!empty($request->getServerParams()['SERVER_ADDR'])
             && filter_var($request->getServerParams()['SERVER_ADDR'], FILTER_VALIDATE_IP)
         ) {
             return $request->getServerParams()['SERVER_ADDR'];
