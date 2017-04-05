@@ -158,7 +158,7 @@ class AccessLog implements MiddlewareInterface
                         return $this->getClientIp($request);
 
                     case 'A':
-                        return $this->getServerIp($request);
+                        return $this->getServerParamIp($request, 'SERVER_ADDR');
 
                     case 'B':
                         return (string) $response->getBody()->getSize() ?: '0';
@@ -173,7 +173,7 @@ class AccessLog implements MiddlewareInterface
                         return $request->getServerParams()['PHP_SELF'];
 
                     case 'h':
-                        $result = $this->getConnectionIp($request);
+                        $result = $this->getServerParamIp($request, 'REMOTE_ADDR');
 
                         if ($this->hostnameLookups
                             && filter_var($request->getServerParams()['SERVER_ADDR'], FILTER_VALIDATE_IP)
@@ -228,16 +228,16 @@ class AccessLog implements MiddlewareInterface
                         return $this->getVirtualHost($request);
 
                     case 'I':
-                        $size = $this->getRequestSize($request);
+                        $size = $this->getMessageSize($request, $this->getRequestFirstLine($request));
                         return null !== $size ? (string) $size : '-';
 
                     case 'O':
-                        $size = $this->getResponseSize($response);
+                        $size = $this->getMessageSize($response, $this->getResponseStatusLine($response));
                         return null !== $size ? (string) $size : '-';
 
                     case 'S':
-                        $requestSize = $this->getRequestSize($request);
-                        $responseSize = $this->getRequestSize($response);
+                        $requestSize = $this->getMessageSize($request, $this->getRequestFirstLine($request));
+                        $responseSize = $this->getMessageSize($response, $this->getResponseStatusLine($response));
 
                         if (null !== $requestSize && null !== $responseSize) {
                             return (string) ($requestSize + $responseSize);
@@ -281,7 +281,7 @@ class AccessLog implements MiddlewareInterface
             function (array $matches) use ($request, $response, $begin, $end) {
                 switch ($matches[2]) {
                     case 'a':
-                        return 'c' === $matches[1] ? $this->getConnectionIp($request) : '-';
+                        return 'c' === $matches[1] ? $this->getServerParamIp($request, 'REMOTE_ADDR') : '-';
 
                     case 'C':
                         $cookies = $request->getCookieParams();
@@ -369,6 +369,13 @@ class AccessLog implements MiddlewareInterface
         return $request->getUri()->getPort() ?: ('https' === $request->getUri()->getScheme() ? 443 : 80);
     }
 
+    /**
+     * Returns the client ip
+     *
+     * @param ServerRequestInterface $request
+     *
+     * @return string
+     */
     private function getClientIp(ServerRequestInterface $request)
     {
         if ($this->ipAttribute) {
@@ -378,23 +385,20 @@ class AccessLog implements MiddlewareInterface
         return '-';
     }
 
-    private function getConnectionIp(ServerRequestInterface $request)
+    /**
+     * Returns an ip from the server params
+     *
+     * @param ServerRequestInterface $request
+     * @param string $key
+     *
+     * @return string
+     */
+    private function getServerParamIp(ServerRequestInterface $request, $key)
     {
-        if (!empty($request->getServerParams()['REMOTE_ADDR'])
-            && filter_var($request->getServerParams()['REMOTE_ADDR'], FILTER_VALIDATE_IP)
+        if (!empty($request->getServerParams()[$key])
+            && filter_var($request->getServerParams()[$key], FILTER_VALIDATE_IP)
         ) {
-            return $request->getServerParams()['REMOTE_ADDR'];
-        }
-
-        return '-';
-    }
-
-    private function getServerIp(ServerRequestInterface $request)
-    {
-        if (!empty($request->getServerParams()['SERVER_ADDR'])
-            && filter_var($request->getServerParams()['SERVER_ADDR'], FILTER_VALIDATE_IP)
-        ) {
-            return $request->getServerParams()['SERVER_ADDR'];
+            return $request->getServerParams()[$key];
         }
 
         return '-';
@@ -402,54 +406,40 @@ class AccessLog implements MiddlewareInterface
 
 
     /**
-     * Get the request size (including status line and headers)
+     * Returns the first line of the http request
      *
      * @param ServerRequestInterface $request
      *
-     * @return int|null
+     * @return string
      */
-    private function getRequestSize(ServerRequestInterface $request)
-    {
-        $bodySize = $request->getBody()->getSize();
-
-        if (null === $bodySize) {
-            return null;
-        }
-
-        $firstLineSize = strlen($this->getRequestFirstLine($request));
-
-        $headersSize = strlen(implode("\r\n", $this->getMessageHeaders($request)));
-
-        return $firstLineSize + 2 + $headersSize + 4 + $bodySize;
-    }
-
     private function getRequestFirstLine(ServerRequestInterface $request)
     {
         return $request->getMethod()
-            . ' ' . ($request->getUri()->getPath()?:'/')
+            . ' ' . ($request->getUri()->getPath() ?: '/')
             . ' HTTP/' . $request->getProtocolVersion();
     }
 
     /**
-     * Get the response size (including status line and headers)
+     * Get the message size (including first line and headers)
      *
-     * @param ResponseInterface $response
+     * @param MessageInterface $message
+     * @param string $firstLine
      *
      * @return int|null
      */
-    private function getResponseSize(ResponseInterface $response)
+    private function getMessageSize(MessageInterface $message, $firstLine)
     {
-        $bodySize = $response->getBody()->getSize();
+        $bodySize = $message->getBody()->getSize();
 
         if (null === $bodySize) {
             return null;
         }
 
-        $statusSize = strlen($this->getResponseStatusLine($response));
+        $firstLineSize = strlen($firstLine);
 
-        $headersSize = strlen(implode("\r\n", $this->getMessageHeaders($response)));
+        $headersSize = strlen(implode("\r\n", $this->getMessageHeaders($message)));
 
-        return $statusSize + 2 + $headersSize + 4 + $bodySize;
+        return $firstLineSize + 2 + $headersSize + 4 + $bodySize;
     }
 
     /**
@@ -479,6 +469,7 @@ class AccessLog implements MiddlewareInterface
     private function getMessageHeaders(MessageInterface $message)
     {
         $headers = [];
+
         foreach ($message->getHeaders() as $header => $values) {
             foreach ($values as $value) {
                 $headers[] = sprintf('%s: %s', $header, $value);
@@ -491,16 +482,18 @@ class AccessLog implements MiddlewareInterface
     /**
      * @param float $time
      * @param string $format
+     *
+     * @return string
      */
     private function getTimeInFormat($time, $format)
     {
         switch ($format) {
             case 'sec':
-                return round($time);
+                return (string) round($time);
             case 'msec':
-                return round($time*1E3);
+                return (string) round($time*1E3);
             case 'usec':
-                return round($time*1E6);
+                return (string) round($time*1E6);
             default:
                 return strftime($format, $time);
         }
