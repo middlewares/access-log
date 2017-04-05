@@ -53,7 +53,7 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
         }
 
         Dispatcher::run([
-            (new AccessLog($logger))->format(AccessLog::FORMAT_COMBINED)->ipAttribute('client-ip'),
+            (new AccessLog($logger))->format('%a %l %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i"')->ipAttribute('client-ip'),
             function () {
                 return Factory::createResponse(503);
             }
