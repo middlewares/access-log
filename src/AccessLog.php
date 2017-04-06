@@ -94,13 +94,13 @@ class AccessLog implements MiddlewareInterface
     /**
      * Set the hostname lookups flag
      *
-     * @param bool $flag
+     * @param bool $hostnameLookups
      *
      * @return self
      */
-    public function hostnameLookups($flag = false)
+    public function hostnameLookups($hostnameLookups = true)
     {
-        $this->hostnameLookups = $flag;
+        $this->hostnameLookups = $hostnameLookups;
 
         return $this;
     }

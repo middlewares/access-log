@@ -46,13 +46,25 @@ $response = $dispatcher->dispatch(new ServerRequest());
 
 The logger object used to store the logs.
 
-#### `combined($combined = true)`
+#### `format(string $format)`
 
-To use the *Combined Log* format instead the *Common Log* format. The *Combined Log* format is exactly the same than *Common Log,* with the addition of two more fields: `Referer` and `User-Agent` headers.
+Custom format used in the log message. [More info about the available options](http://httpd.apache.org/docs/2.4/mod/mod_log_config.html). You can use also one of the following constants provided with predefined formats:
+* `AccessLog::FORMAT_COMMON` (used by default)
+* `AccessLog::FORMAT_COMMON_VHOST`
+* `AccessLog::FORMAT_COMBINED`
+* `AccessLog::FORMAT_REFERER`
+* `AccessLog::FORMAT_AGENT`
+* `AccessLog::FORMAT_VHOST`
+* `AccessLog::FORMAT_COMMON_DEBIAN`
+* `AccessLog::FORMAT_COMBINED_DEBIAN`
+* `AccessLog::FORMAT_VHOST_COMBINED_DEBIAN`
 
-#### `vhost($vhost = true)`
-
-To prepend the virtual host info to the log record. [more info](https://httpd.apache.org/docs/2.4/logs.html#virtualhost)
+```php
+$dispatcher = new Dispatcher([
+    (new Middlewares\AccessLog($logger))
+        ->format(Middlewares\AccessLog::FORMAT_COMMON_VHOST)
+]);
+```
 
 #### `ipAttribute(string $ipAttribute)`
 
@@ -68,6 +80,10 @@ $dispatcher = new Dispatcher([
         ->ipAttribute('client-ip')
 ]);
 ```
+
+#### `hostnameLookups(bool $hostnameLookups = true)`
+
+Enable the `hostnameLookups` flag used to get the remote hostname (`%h`). (false by default)
 
 ---
 

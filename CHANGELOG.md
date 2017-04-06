@@ -6,9 +6,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-### Fixed
+### Changed
 
-* Write dash on empty headers
+* Rewrited the middleware in order to be more flexible
+
+### Removed
+
+* The options `vhost` and `combined` are not longer available
+
+### Added
+
+* Option `hostnameLookups` to enable this flag
+* Option `format` to customize the message log format
+* New constants with predefined formats:
+  * `AccessLog::FORMAT_COMMON`
+  * `AccessLog::FORMAT_COMMON_VHOST`
+  * `AccessLog::FORMAT_COMBINED`
+  * `AccessLog::FORMAT_REFERER`
+  * `AccessLog::FORMAT_AGENT`
+  * `AccessLog::FORMAT_VHOST`
+  * `AccessLog::FORMAT_COMMON_DEBIAN`
+  * `AccessLog::FORMAT_COMBINED_DEBIAN`
+  * `AccessLog::FORMAT_VHOST_COMBINED_DEBIAN`
 
 ## [0.5.0] - 2017-04-03
 
