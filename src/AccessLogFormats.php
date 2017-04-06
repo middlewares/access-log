@@ -4,9 +4,6 @@ namespace Middlewares;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Psr\Log\LoggerInterface;
 use Psr\Http\Message\MessageInterface;
 
 abstract class AccessLogFormats
