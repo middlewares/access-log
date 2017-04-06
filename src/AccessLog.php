@@ -8,6 +8,7 @@ use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\MessageInterface;
+use Middlewares\AccessLogFormats as Format;
 
 class AccessLog implements MiddlewareInterface
 {
@@ -155,52 +156,43 @@ class AccessLog implements MiddlewareInterface
                         return '%';
 
                     case 'a':
-                        return $this->getClientIp($request);
+                        return Format::getClientIp($request, $this->ipAttribute);
 
                     case 'A':
-                        return $this->getServerParamIp($request, 'SERVER_ADDR');
+                        return Format::getLocalIp($request);
 
                     case 'B':
-                        return (string) $response->getBody()->getSize() ?: '0';
+                        return Format::getResponseBodySize($response, '0');
 
                     case 'b':
-                        return (string) $response->getBody()->getSize() ?: '-';
+                        return Format::getResponseBodySize($response, '-');
 
                     case 'D':
                         return round(($end - $begin) * 1E6);
 
                     case 'f':
-                        return $request->getServerParams()['PHP_SELF'];
+                        return Format::getFilename($request);
 
                     case 'h':
-                        $result = $this->getServerParamIp($request, 'REMOTE_ADDR');
-
-                        if ($this->hostnameLookups
-                            && filter_var($request->getServerParams()['SERVER_ADDR'], FILTER_VALIDATE_IP)
-                        ) {
-                            return gethostbyaddr($result);
-                        }
-
-                        return $result;
+                        return Format::getRemoteHostname($request, $this->hostnameLookups);
 
                     case 'H':
-                        return 'HTTP/' . $request->getProtocolVersion();
+                        return Format::getProtocol($request);
 
                     case 'm':
-                        return $request->getMethod();
+                        return Format::getMethod($request);
 
                     case 'p':
-                        return (string) $this->getPort($request);
+                        return Format::getPort($request);
 
                     case 'q':
-                        $query = $request->getUri()->getQuery();
-                        return '' !== $query ? '?'.$query : '';
+                        return Format::getQuery($request);
 
                     case 'r':
                         return $this->getRequestFirstLine($request);
 
                     case 's':
-                        return (string) $response->getStatusCode();
+                        return Format::getStatus($response);
 
                     case 't':
                         return '['.$this->getTimeInFormat($begin, '%d/%b/%Y:%H:%M:%S %z').']';
@@ -209,23 +201,16 @@ class AccessLog implements MiddlewareInterface
                         return round($end - $begin);
 
                     case 'u':
-                        $server = $request->getServerParams();
-                        return isset($server['REMOTE_USER']) ? $server['REMOTE_USER'] : '-';
+                        return Format::getRemoteUser($request);
 
                     case 'U':
-                        return $request->getUri()->getPath() ?: '/';
+                        return Format::getPath($request);
 
                     case 'v':
-                        return $this->getVirtualHost($request);
+                        return Format::getHost($request);
 
                     case 'V':
-                        $server = $request->getServerParams();
-
-                        if (isset($server['SERVER_NAME'])) {
-                            return $server['SERVER_NAME'];
-                        }
-
-                        return $this->getVirtualHost($request);
+                        return Format::getServerName($request);
 
                     case 'I':
                         $size = $this->getMessageSize($request, $this->getRequestFirstLine($request));
