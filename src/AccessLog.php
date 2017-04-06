@@ -7,28 +7,51 @@ use Psr\Http\Message\ResponseInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Http\Message\MessageInterface;
+use Middlewares\AccessLogFormats as Format;
 
 class AccessLog implements MiddlewareInterface
 {
+    /**
+     * @link http://httpd.apache.org/docs/2.4/mod/mod_log_config.html#examples
+     */
+    const FORMAT_COMMON = '%h %l %u %t "%r" %>s %b';
+    const FORMAT_COMMON_VHOST = '%v %h %l %u %t "%r" %>s %b';
+    const FORMAT_COMBINED = '%h %l %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i"';
+    const FORMAT_REFERER = '%{Referer}i -> %U';
+    const FORMAT_AGENT = '%{User-Agent}i';
+
+    /**
+     * @link https://httpd.apache.org/docs/2.4/logs.html#virtualhost
+     */
+    const FORMAT_VHOST = '%v %l %u %t "%r" %>s %b';
+
+    /**
+     * @link https://anonscm.debian.org/cgit/pkg-apache/apache2.git/tree/debian/config-dir/apache2.conf.in#n212
+     */
+    const FORMAT_COMMON_DEBIAN = '%h %l %u %t “%r” %>s %O';
+    const FORMAT_COMBINED_DEBIAN = '%h %l %u %t “%r” %>s %O “%{Referer}i” “%{User-Agent}i”';
+    const FORMAT_VHOST_COMBINED_DEBIAN = '%v:%p %h %l %u %t “%r” %>s %O “%{Referer}i” “%{User-Agent}i"';
+
     /**
      * @var LoggerInterface The router container
      */
     private $logger;
 
     /**
-     * @var bool
+     * @var string
      */
-    private $combined = false;
-
-    /**
-     * @var bool
-     */
-    private $vhost = false;
+    private $format = self::FORMAT_COMMON;
 
     /**
      * @var string|null
      */
     private $ipAttribute;
+
+    /**
+     * @var bool
+     */
+    private $hostnameLookups = false;
 
     /**
      * Set the LoggerInterface instance.
@@ -41,29 +64,15 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
-     * Whether use the combined log format instead the common log format.
+     * Set the desired format
      *
-     * @param bool $combined
-     *
-     * @return self
-     */
-    public function combined($combined = true)
-    {
-        $this->combined = $combined;
-
-        return $this;
-    }
-
-    /**
-     * Whether prepend the vhost info to the log record.
-     *
-     * @param bool $vhost
+     * @param string $format
      *
      * @return self
      */
-    public function vhost($vhost = true)
+    public function format($format)
     {
-        $this->vhost = $vhost;
+        $this->format = $format;
 
         return $this;
     }
@@ -78,6 +87,21 @@ class AccessLog implements MiddlewareInterface
     public function ipAttribute($ipAttribute)
     {
         $this->ipAttribute = $ipAttribute;
+
+        return $this;
+    }
+
+    /**
+     * Set the hostname lookups flag
+     *
+     * @param bool $hostnameLookups
+     *
+     * @return self
+     */
+    public function hostnameLookups($hostnameLookups = true)
+    {
+        $this->hostnameLookups = $hostnameLookups;
+
         return $this;
     }
 
@@ -91,19 +115,13 @@ class AccessLog implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, DelegateInterface $delegate)
     {
+        $begin = microtime(true);
         $response = $delegate->process($request);
+        $end = microtime(true);
 
-        $message = '';
-
-        if ($this->vhost) {
-            $message .= $this->vhostPrefix($request);
-        }
-
-        $message .= $this->commonFormat($request, $response);
-
-        if ($this->combined) {
-            $message .= ' '.$this->combinedFormat($request);
-        }
+        $message = $this->format;
+        $message = $this->replaceConstantDirectives($message, $request, $response, $begin, $end);
+        $message = $this->replaceVariableDirectives($message, $request, $response, $begin, $end);
 
         if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 600) {
             $this->logger->error($message);
@@ -115,88 +133,161 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
-     * Generates the Virtual Host prefix
-     * https://httpd.apache.org/docs/2.4/logs.html#virtualhost
-     *
+     * @param string $format
      * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param float $begin
+     * @param float $end
      *
      * @return string
      */
-    private function vhostPrefix(ServerRequestInterface $request)
-    {
-        $host = $request->hasHeader('Host') ? $request->getHeaderLine('Host') : $request->getUri()->getHost();
+    private function replaceConstantDirectives(
+        $format,
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $begin,
+        $end
+    ) {
+        return preg_replace_callback(
+            '/%(?:[<>])?([%aABbDfhHklLmpPqrRstTuUvVXIOS])/',
+            function (array $matches) use ($request, $response, $begin, $end) {
+                switch ($matches[1]) {
+                    case '%':
+                        return '%';
 
-        if ('' === $host) {
-            return '';
-        }
+                    case 'a':
+                        return Format::getClientIp($request, $this->ipAttribute);
 
-        $port = $request->getUri()->getPort();
-        if (null === $port) {
-            $port = 'http' === $request->getUri()->getScheme() ? 80 : 443;
-        }
+                    case 'A':
+                        return Format::getLocalIp($request);
 
-        return sprintf('%s:%s ', $host, $port);
-    }
+                    case 'B':
+                        return Format::getBodySize($response, '0');
 
-    /**
-     * Get the client ip.
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
-     */
-    private function getIp(ServerRequestInterface $request)
-    {
-        if ($this->ipAttribute !== null) {
-            return $request->getAttribute($this->ipAttribute);
-        }
+                    case 'b':
+                        return Format::getBodySize($response, '-');
 
-        $server = $request->getServerParams();
-        if (!empty($server['REMOTE_ADDR']) && filter_var($server['REMOTE_ADDR'], FILTER_VALIDATE_IP)) {
-            return $server['REMOTE_ADDR'];
-        }
+                    case 'D':
+                        return Format::getRequestDuration($begin, $end, 'ms');
 
-        return '-';
-    }
+                    case 'f':
+                        return Format::getFilename($request);
 
-    /**
-     * Generates a message using the Apache's Common Log format
-     * https://httpd.apache.org/docs/2.4/logs.html#accesslog.
-     *
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface      $response
-     *
-     * @return string
-     */
-    private function commonFormat(ServerRequestInterface $request, ResponseInterface $response)
-    {
-        return sprintf(
-            '%s - %s [%s] "%s %s HTTP/%s" %d %s',
-            $this->getIp($request),
-            $request->getUri()->getUserInfo() ?: '-',
-            strftime('%d/%b/%Y:%H:%M:%S %z'),
-            strtoupper($request->getMethod()),
-            $request->getUri()->getPath() ?: '/',
-            $request->getProtocolVersion(),
-            $response->getStatusCode(),
-            $response->getBody()->getSize() ?: '-'
+                    case 'h':
+                        return Format::getRemoteHostname($request, $this->hostnameLookups);
+
+                    case 'H':
+                        return Format::getProtocol($request);
+
+                    case 'm':
+                        return Format::getMethod($request);
+
+                    case 'p':
+                        return Format::getPort($request, 'canonical');
+
+                    case 'q':
+                        return Format::getQuery($request);
+
+                    case 'r':
+                        return Format::getRequestLine($request);
+
+                    case 's':
+                        return Format::getStatus($response);
+
+                    case 't':
+                        return Format::getRequestTime($begin, $end, 'begin:%d/%b/%Y:%H:%M:%S %z');
+
+                    case 'T':
+                        return Format::getRequestDuration($begin, $end, 's');
+
+                    case 'u':
+                        return Format::getRemoteUser($request);
+
+                    case 'U':
+                        return Format::getPath($request);
+
+                    case 'v':
+                        return Format::getHost($request);
+
+                    case 'V':
+                        return Format::getServerName($request);
+
+                    case 'I':
+                        return Format::getMessageSize($request, '-');
+
+                    case 'O':
+                        return Format::getMessageSize($response, '-');
+
+                    case 'S':
+                        return Format::getTransferredSize($request, $response);
+
+                    //NOT IMPLEMENTED
+                    case 'k':
+                    case 'l':
+                    case 'L':
+                    case 'P':
+                    case 'R':
+                    case 'X':
+                    default:
+                        return '-';
+                }
+            },
+            $format
         );
     }
 
     /**
-     * Generates a message using the Apache's Combined Log format
-     * This is exactly the same than Common Log, with the addition of two more fields: Referer and User-Agent headers.
-     *
+     * @param string $format
      * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param float $begin
+     * @param float $end
      *
      * @return string
      */
-    private function combinedFormat(ServerRequestInterface $request)
-    {
-        return sprintf(
-            '"%s" "%s"',
-            $request->getHeaderLine('Referer') ?: '-',
-            $request->getHeaderLine('User-Agent') ?: '-'
+    private function replaceVariableDirectives(
+        $format,
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        $begin,
+        $end
+    ) {
+        return preg_replace_callback(
+            '/%(?:[<>])?{([^}]+)}([aCeinopPtT])/',
+            function (array $matches) use ($request, $response, $begin, $end) {
+                switch ($matches[2]) {
+                    case 'a':
+                        return Format::getClientIp($request, $this->ipAttribute);
+
+                    case 'C':
+                        return Format::getCookie($request, $matches[1]);
+
+                    case 'e':
+                        return Format::getEnv($matches[1]);
+
+                    case 'i':
+                        return Format::getHeader($request, $matches[1]);
+
+                    case 'o':
+                        return Format::getHeader($response, $matches[1]);
+
+                    case 'p':
+                        return Format::getPort($request, $matches[1]);
+
+                    case 't':
+                        return Format::getRequestTime($begin, $end, $matches[1]);
+
+                    case 'T':
+                        return Format::getRequestDuration($begin, $end, $matches[1]);
+
+                    //NOT IMPLEMENTED
+                    case 'n':
+                    case 'P':
+                    default:
+                        return '-';
+                }
+            },
+            $format
         );
     }
 }
