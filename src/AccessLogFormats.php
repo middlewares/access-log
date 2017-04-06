@@ -49,7 +49,7 @@ abstract class AccessLogFormats
      */
     public static function getFilename(ServerRequestInterface $request)
     {
-        return $request->getServerParam($request, 'PHP_SELF');
+        return self::getServerParam($request, 'PHP_SELF');
     }
 
     /**
@@ -130,7 +130,7 @@ abstract class AccessLogFormats
      */
     public static function getEnv($name)
     {
-        return getenv($matches[1]) ?: '-';
+        return getenv($name) ?: '-';
     }
 
     /**
@@ -286,23 +286,16 @@ abstract class AccessLogFormats
     }
 
     /**
-     * Returns the request size
+     * Bytes transferred (received and sent), including request and headers (%S)
      *
      * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
      *
      * @return string
      */
-    public static function getRequestSize(ServerRequestInterface $request)
+    public static function getTransferredSize(ServerRequestInterface $request, ResponseInterface $response)
     {
-        $size = $this->getMessageSize($request, $this->getRequestFirstLine($request));
-        return null !== $size ? (string) $size : '-';
-
-        return sprintf(
-            '%s %d%s',
-            self::getProtocol($response),
-            self::getStatus($response),
-            ($response->getReasonPhrase() ? ' '.$response->getReasonPhrase() : '')
-        );
+        return (self::getMessageSize($request, 0) + self::getMessageSize($response, 0)) ?: '-';
     }
 
     /**
