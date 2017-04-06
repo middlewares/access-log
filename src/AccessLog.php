@@ -7,7 +7,6 @@ use Psr\Http\Message\ResponseInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Interop\Http\ServerMiddleware\DelegateInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Http\Message\MessageInterface;
 use Middlewares\AccessLogFormats as Format;
 
 class AccessLog implements MiddlewareInterface
