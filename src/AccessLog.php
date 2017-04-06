@@ -162,13 +162,13 @@ class AccessLog implements MiddlewareInterface
                         return Format::getLocalIp($request);
 
                     case 'B':
-                        return Format::getResponseBodySize($response, '0');
+                        return Format::getBodySize($response, '0');
 
                     case 'b':
-                        return Format::getResponseBodySize($response, '-');
+                        return Format::getBodySize($response, '-');
 
                     case 'D':
-                        return round(($end - $begin) * 1E6);
+                        return Format::getRequestDuration($begin, $end, 'ms');
 
                     case 'f':
                         return Format::getFilename($request);
@@ -183,22 +183,22 @@ class AccessLog implements MiddlewareInterface
                         return Format::getMethod($request);
 
                     case 'p':
-                        return Format::getPort($request);
+                        return Format::getPort($request, 'canonical');
 
                     case 'q':
                         return Format::getQuery($request);
 
                     case 'r':
-                        return $this->getRequestFirstLine($request);
+                        return Format::getRequestLine($request);
 
                     case 's':
                         return Format::getStatus($response);
 
                     case 't':
-                        return '['.$this->getTimeInFormat($begin, '%d/%b/%Y:%H:%M:%S %z').']';
+                        return Format::getRequestTime($begin, $end, 'begin:%d/%b/%Y:%H:%M:%S %z');
 
                     case 'T':
-                        return round($end - $begin);
+                        return Format::getRequestDuration($begin, $end, 's');
 
                     case 'u':
                         return Format::getRemoteUser($request);
@@ -213,22 +213,13 @@ class AccessLog implements MiddlewareInterface
                         return Format::getServerName($request);
 
                     case 'I':
-                        $size = $this->getMessageSize($request, $this->getRequestFirstLine($request));
-                        return null !== $size ? (string) $size : '-';
+                        return Format::getMessageSize($request, '-');
 
                     case 'O':
-                        $size = $this->getMessageSize($response, $this->getResponseStatusLine($response));
-                        return null !== $size ? (string) $size : '-';
+                        return Format::getMessageSize($response, '-');
 
                     case 'S':
-                        $requestSize = $this->getMessageSize($request, $this->getRequestFirstLine($request));
-                        $responseSize = $this->getMessageSize($response, $this->getResponseStatusLine($response));
-
-                        if (null !== $requestSize && null !== $responseSize) {
-                            return (string) ($requestSize + $responseSize);
-                        }
-
-                        return '-';
+                        return (Format::getMessageSize($request, 0) + Format::getMessageSize($response, 0)) ?: '-';
 
                     //NOT IMPLEMENTED
                     case 'k':
@@ -266,55 +257,28 @@ class AccessLog implements MiddlewareInterface
             function (array $matches) use ($request, $response, $begin, $end) {
                 switch ($matches[2]) {
                     case 'a':
-                        return 'c' === $matches[1] ? $this->getServerParamIp($request, 'REMOTE_ADDR') : '-';
+                        return Format::getClientIp($request, $this->ipAttribute);
 
                     case 'C':
-                        $cookies = $request->getCookieParams();
-                        return isset($cookies[$matches[1]]) ? $cookies[$matches[1]] : '-';
+                        return Format::getCookie($request, $matches[1]);
 
                     case 'e':
-                        return getenv($matches[1]) ?: '-';
+                        return Format::getEnv($matches[1]);
 
                     case 'i':
-                        return $request->getHeaderLine($matches[1]) ?: '-';
+                        return Format::getHeader($request, $matches[1]);
 
                     case 'o':
-                        return $response->getHeaderLine($matches[1]) ?: '-';
+                        return Format::getHeader($response, $matches[1]);
 
                     case 'p':
-                        switch ($matches[1]) {
-                            case 'canonical':
-                            case 'local':
-                                return $this->getPort($request);
-                        }
-                        return '-';
+                        return Format::getPort($request, $matches[1]);
 
                     case 't':
-                        $parts = split(':', $matches[1], 2);
-
-                        if (2 === count($parts)) {
-                            if ('begin' === $parts[0]) {
-                                return $this->getTimeInFormat($begin, $parts[1]);
-                            }
-
-                            if ('end' === $parts[0]) {
-                                return $this->getTimeInFormat($end, $parts[1]);
-                            }
-                        }
-                        return '-';
+                        return Format::getRequestTime($begin, $end, $matches[1]);
 
                     case 'T':
-                        switch ($matches[1]) {
-                            case 'us':
-                                return round(($end - $begin) * 1E6);
-
-                            case 'ms':
-                                return round(($end - $begin) * 1E3);
-
-                            case 's':
-                                return round($end - $begin);
-                        }
-                        return '-';
+                        return Format::getRequestDuration($begin, $end, $matches[1]);
 
                     //NOT IMPLEMENTED
                     case 'n':
@@ -325,162 +289,5 @@ class AccessLog implements MiddlewareInterface
             },
             $format
         );
-    }
-
-    /**
-     * Generates the Virtual Host prefix
-     * https://httpd.apache.org/docs/2.4/logs.html#virtualhost
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
-     */
-    private function getVirtualHost(ServerRequestInterface $request)
-    {
-        $host = $request->hasHeader('Host') ? $request->getHeaderLine('Host') : $request->getUri()->getHost();
-
-        return $host ?: '-';
-    }
-
-    /**
-     * Get the request port
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return int
-     */
-    private function getPort(ServerRequestInterface $request)
-    {
-        return $request->getUri()->getPort() ?: ('https' === $request->getUri()->getScheme() ? 443 : 80);
-    }
-
-    /**
-     * Returns the client ip
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
-     */
-    private function getClientIp(ServerRequestInterface $request)
-    {
-        if ($this->ipAttribute) {
-            return $request->getAttribute($this->ipAttribute);
-        }
-
-        return '-';
-    }
-
-    /**
-     * Returns an ip from the server params
-     *
-     * @param ServerRequestInterface $request
-     * @param string $key
-     *
-     * @return string
-     */
-    private function getServerParamIp(ServerRequestInterface $request, $key)
-    {
-        if (!empty($request->getServerParams()[$key])
-            && filter_var($request->getServerParams()[$key], FILTER_VALIDATE_IP)
-        ) {
-            return $request->getServerParams()[$key];
-        }
-
-        return '-';
-    }
-
-
-    /**
-     * Returns the first line of the http request
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
-     */
-    private function getRequestFirstLine(ServerRequestInterface $request)
-    {
-        return $request->getMethod()
-            . ' ' . ($request->getUri()->getPath() ?: '/')
-            . ' HTTP/' . $request->getProtocolVersion();
-    }
-
-    /**
-     * Get the message size (including first line and headers)
-     *
-     * @param MessageInterface $message
-     * @param string $firstLine
-     *
-     * @return int|null
-     */
-    private function getMessageSize(MessageInterface $message, $firstLine)
-    {
-        $bodySize = $message->getBody()->getSize();
-
-        if (null === $bodySize) {
-            return null;
-        }
-
-        $firstLineSize = strlen($firstLine);
-
-        $headersSize = strlen(implode("\r\n", $this->getMessageHeaders($message)));
-
-        return $firstLineSize + 2 + $headersSize + 4 + $bodySize;
-    }
-
-    /**
-     * Returns the response status line
-     *
-     * @param ResponseInterface $response
-     *
-     * @return string
-     */
-    private function getResponseStatusLine(ResponseInterface $response)
-    {
-        return sprintf(
-            'HTTP/%s %d%s',
-            $response->getProtocolVersion(),
-            $response->getStatusCode(),
-            ($response->getReasonPhrase() ? ' ' . $response->getReasonPhrase() : '')
-        );
-    }
-
-    /**
-     * Returns the response headers as an array of lines
-     *
-     * @param MessageInterface $message
-     *
-     * @return string[]
-     */
-    private function getMessageHeaders(MessageInterface $message)
-    {
-        $headers = [];
-
-        foreach ($message->getHeaders() as $header => $values) {
-            foreach ($values as $value) {
-                $headers[] = sprintf('%s: %s', $header, $value);
-            }
-        }
-
-        return $headers;
-    }
-
-    /**
-     * @param float $time
-     * @param string $format
-     *
-     * @return string
-     */
-    private function getTimeInFormat($time, $format)
-    {
-        switch ($format) {
-            case 'sec':
-                return (string) round($time);
-            case 'msec':
-                return (string) round($time*1E3);
-            case 'usec':
-                return (string) round($time*1E6);
-            default:
-                return strftime($format, $time);
-        }
     }
 }
