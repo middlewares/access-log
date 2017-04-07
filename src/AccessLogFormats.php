@@ -34,7 +34,7 @@ abstract class AccessLogFormats
      */
     public static function getLocalIp(ServerRequestInterface $request)
     {
-        return self::getServerParamIp($request, 'SERVER_ADDR');
+        return self::getServerParamIp($request, 'REMOTE_ADDR');
     }
 
     /**
@@ -75,7 +75,7 @@ abstract class AccessLogFormats
     {
         $ip = self::getServerParamIp($request, 'REMOTE_ADDR');
 
-        if ($hostnameLookups && filter_var($ip, FILTER_VALIDATE_IP)) {
+        if ($ip !== '-' && $hostnameLookups) {
             return gethostbyaddr($ip);
         }
 
@@ -418,7 +418,7 @@ abstract class AccessLogFormats
     {
         $ip = self::getServerParam($request, $key);
 
-        if (filter_var($ip, FILTER_VALIDATE_IP)) {
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
             return $ip;
         }
 

@@ -3,6 +3,7 @@
 namespace Middlewares\Tests;
 
 use Middlewares\AccessLog;
+use Middlewares\AccessLogFormats as Format;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use Monolog\Logger;
@@ -82,5 +83,60 @@ class AccessLogTest extends \PHPUnit_Framework_TestCase
 EOT;
 
         $this->assertEquals($expect, $string);
+    }
+
+    public function testFormats()
+    {
+        $request = Factory::createServerRequest(
+            [
+                'REMOTE_ADDR' => '0.0.0.0',
+                'PHP_SELF' => 'index.php',
+                'REMOTE_USER' => 'username'
+            ],
+            'PUT',
+            'https://domain.com/path?hello=world'
+        )
+        ->withAttribute('client-ip', '1.2.3.4')
+        ->withHeader('Referer', 'http://example.com')
+        ->withCookieParams(['foo' => 'bar']);
+
+        $response = Factory::createResponse(200);
+        $response->getBody()->write('hello');
+
+        putenv('test=ok');
+
+        $this->assertEquals('1.2.3.4', Format::getClientIp($request, 'client-ip'));
+        $this->assertEquals('0.0.0.0', Format::getClientIp($request));
+        $this->assertEquals('0.0.0.0', Format::getLocalIp($request));
+        $this->assertEquals('index.php', Format::getFilename($request));
+        $this->assertEquals('-', Format::getBodySize($request, '-'));
+        $this->assertEquals(5, Format::getBodySize($response, '-'));
+        $this->assertEquals('0.0.0.0', Format::getRemoteHostName($request));
+        $this->assertEquals('HTTP/1.1', Format::getProtocol($request));
+        $this->assertEquals('PUT', Format::getMethod($request));
+        $this->assertEquals('http://example.com', Format::getHeader($request, 'Referer'));
+        $this->assertEquals('-', Format::getHeader($request, 'No-Referer'));
+        $this->assertEquals('ok', Format::getEnv('test'));
+        $this->assertEquals('-', Format::getEnv('no-test'));
+        $this->assertEquals('bar', Format::getCookie($request, 'foo'));
+        $this->assertEquals('-', Format::getCookie($request, 'foo2'));
+        $this->assertEquals('443', Format::getPort($request, 'canonical'));
+        $this->assertEquals('?hello=world', Format::getQuery($request));
+        $this->assertEquals('200', Format::getStatus($response));
+        $this->assertEquals('username', Format::getRemoteUser($request));
+        $this->assertEquals('/path', Format::getPath($request));
+        $this->assertEquals('domain.com', Format::getHost($request));
+        $this->assertEquals('domain.com', Format::getServerName($request));
+        $this->assertEquals('PUT /path?hello=world HTTP/1.1', Format::getRequestLine($request));
+        $this->assertEquals('HTTP/1.1 200 OK', Format::getResponseLine($response));
+        $this->assertEquals(107, Format::getTransferredSize($request, $response));
+        $this->assertEquals(81, Format::getMessageSize($request));
+        $this->assertEquals(26, Format::getMessageSize($response));
+        $this->assertEquals('[100]', Format::getRequestTime(100, 200, 'sec'));
+        $this->assertEquals('[100000]', Format::getRequestTime(100, 200, 'msec'));
+        $this->assertEquals('[100000000]', Format::getRequestTime(100, 200, 'usec'));
+        $this->assertEquals('100', Format::getRequestDuration(100, 200, 'sec'));
+        $this->assertEquals('100000', Format::getRequestDuration(100, 200, 'ms'));
+        $this->assertEquals('100000000', Format::getRequestDuration(100, 200, 'us'));
     }
 }
