@@ -19,7 +19,7 @@ abstract class AccessLogFormats
     public static function getClientIp(ServerRequestInterface $request, $ipAttribute = null)
     {
         if (!empty($ipAttribute)) {
-            return $request->getAttribute($ipAttribute);
+            return self::getAttribute($request, $ipAttribute);
         }
 
         return self::getLocalIp($request);
@@ -388,6 +388,19 @@ abstract class AccessLogFormats
             default:
                 return (string) round($end - $begin);
         }
+    }
+
+    /**
+     * Returns a server request attribute
+     *
+     * @param ServerRequestInterface $request
+     * @param string $key
+     *
+     * @return string
+     */
+    public static function getAttribute(ServerRequestInterface $request, $key)
+    {
+        return $request->getAttribute($key, '-');
     }
 
     /**

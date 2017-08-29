@@ -267,6 +267,9 @@ class AccessLog implements MiddlewareInterface
                     case 'i':
                         return Format::getHeader($request, $matches[1]);
 
+                    case 'n':
+                        return Format::getAttribute($request, $matches[1]);
+
                     case 'o':
                         return Format::getHeader($response, $matches[1]);
 
@@ -280,7 +283,6 @@ class AccessLog implements MiddlewareInterface
                         return Format::getRequestDuration($begin, $end, $matches[1]);
 
                     //NOT IMPLEMENTED
-                    case 'n':
                     case 'P':
                     default:
                         return '-';

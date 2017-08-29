@@ -138,5 +138,6 @@ EOT;
         $this->assertEquals('100', Format::getRequestDuration(100, 200, 'sec'));
         $this->assertEquals('100000', Format::getRequestDuration(100, 200, 'ms'));
         $this->assertEquals('100000000', Format::getRequestDuration(100, 200, 'us'));
+        $this->assertEquals('1.2.3.4', Format::getAttribute($request, 'client-ip'));
     }
 }
