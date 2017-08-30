@@ -92,53 +92,53 @@ A custom format can be defined by placing "%" directives in the format string, w
 
 |Format String|Description|
 |---|---|
-|%%|The percent sign.|
-|%a|Client IP address of the server request (see the `ipAttribute` option).|
-|%{c}a|Client IP address of the server request (see the `ipAttribute` option, *differs from the Apache original directive*).|
-|%A|Local IP-address.|
-|%B|Size of response in bytes, excluding HTTP headers.|
-|%b|Size of response in bytes, excluding HTTP headers. In CLF format, i.e. a '-' rather than a 0 when no bytes are sent.|
-|%{VARNAME}C|The contents of cookie VARNAME in the server request sent to the server.|
-|%D|The time taken to serve the request, in microseconds.|
-|%{VARNAME}e|The contents of the environment variable VARNAME.|
-|%f|Filename.|
-|%h|Remote hostname. Will log the IP address if `hostnameLookups` is set to false, which is the default|
-|%H|The request protocol.|
-|%{VARNAME}i|The contents of VARNAME: header line(s) in the request sent to the server.|
-|%m|The request method.|
-|%{VARNAME}n|The contents of attribute VARNAME in the server request (*differs from the Apache original directive*).|
-|%{VARNAME}o|The contents of VARNAME: header line(s) in the reply.|
-|%p|The canonical port of the server serving the request.|
-|%{format}p|The canonical port of the server serving the request or the string `-` for `remote`. Valid formats are `canonical`, `local`, or `remote` (*differs from the Apache original directive*).|
-|%q|The query string (prepended with a ? if a query string exists, otherwise an empty string).|
-|%r|First line of request.|
-|%s|Status.|
-|%t|Time the request was received, in the format [18/Sep/2011:19:18:28 -0400]. The last number indicates the timezone offset from GMT|
-|%{format}t|The time, in the form given by format, which should be in an extended strftime(3) format (potentially localized). If the format starts with begin: (default) the time is taken at the beginning of the request processing. If it starts with end: it is the time when the log entry gets written, close to the end of the request processing. In addition to the formats supported by strftime(3), the following format tokens are supported: `sec`, `msec`, `usec` (*differs from the Apache original directive*).|
-|%T|The time taken to serve the request, in seconds.|
-|%{UNIT}T|The time taken to serve the request, in a time unit given by UNIT. Valid units are `ms` for milliseconds, `us` for microseconds, and `s` for seconds. Using s gives the same result as %T without any format; using us gives the same result as %D.|
-|%u|Remote user if the request was authenticated. May be bogus if return status (%s) is 401 (unauthorized).|
-|%U|The URL path requested, not including any query string.|
-|%v|The host of the server request (*differs from the Apache original directive*).|
-|%%|The server name that appears in the server param of the request, or the request host if not available (*differs from the Apache original directive*).|
-|%I|Bytes received, including request and headers. Cannot be zero.|
-|%O|Bytes sent, including headers.|
-|%S|Bytes transferred (received and sent), including request and headers, cannot be zero. This is the combination of %I and %O.|
+|`%%`|The percent sign.|
+|`%a`|Client IP address of the server request (see the `ipAttribute` option).|
+|`%{c}a`|Client IP address of the server request (see the `ipAttribute` option, *differs from the original Apache directive behavior*).|
+|`%A`|Local IP-address.|
+|`%B`|Size of response in bytes, excluding HTTP headers.|
+|`%b`|Size of response in bytes, excluding HTTP headers. In CLF format, i.e. a `-` rather than a 0 when no bytes are sent.|
+|`%{VARNAME}C`|The contents of cookie `VARNAME` in the server request sent to the server.|
+|`%D`|The time taken to serve the request, in microseconds.|
+|`%{VARNAME}e`|The contents of the environment variable `VARNAME`.|
+|`%f`|Filename.|
+|`%h`|Remote hostname. Will log the IP address if `hostnameLookups` is set to false, which is the default|
+|`%H`|The request protocol.|
+|`%{VARNAME}i`|The contents of `VARNAME:` header line(s) in the request sent to the server.|
+|`%m`|The request method.|
+|`%{VARNAME}n`|The contents of attribute `VARNAME` in the server request (*differs from the original Apache directive behavior*).|
+|`%{VARNAME}o`|The contents of `VARNAME:` header line(s) in the reply.|
+|`%p`|The canonical port of the server serving the request.|
+|`%{format}p`|The canonical port of the server serving the request or the string `-` for `remote`. Valid formats are `canonical`, `local`, or `remote` (*differs from the original Apache directive behavior*).|
+|`%q`|The query string (prepended with a `?` if a query string exists, otherwise an empty string).|
+|`%r`|First line of request.|
+|`%s`|Status.|
+|`%t`|Time the request was received, in the format `[18/Sep/2011:19:18:28 -0400]`. The last number indicates the timezone offset from `GMT`|
+|`%{format}t`|The time, in the form given by format, which should be in an extended `strftime(3)` format (potentially localized). If the format starts with `begin:` (default) the time is taken at the beginning of the request processing. If it starts with `end:` it is the time when the log entry gets written, close to the end of the request processing. In addition to the formats supported by strftime(3), the following format tokens are supported: `sec`, `msec`, `usec` (*differs from the original Apache directive behavior*).|
+|`%T`|The time taken to serve the request, in seconds.|
+|`%{UNIT}T`|The time taken to serve the request, in a time unit given by UNIT. Valid units are `ms` for milliseconds, `us` for microseconds, and `s` for seconds. Using `s` gives the same result as `%T` without any format; using `us` gives the same result as `%D`.|
+|`%u`|Remote user if the request was authenticated. May be bogus if return status (`%s`) is `401` (unauthorized).|
+|`%U`|The URL path requested, not including any query string.|
+|`%v`|The host of the server request (*differs from the original Apache directive behavior*).|
+|`%V`|The server name that appears in the server param of the request, or the request host if not available (*differs from the original Apache directive behavior*).|
+|`%I`|Bytes received, including request and headers. Cannot be zero.|
+|`%O`|Bytes sent, including headers.|
+|`%S`|Bytes transferred (received and sent), including request and headers, cannot be zero. This is the combination of `%I` and `%O`.|
 
 
 The following Apache Httpd server directives are not implemented in this middleware:
 
 |Format String|Description|
 |---|---|
-|%k|Will print the string `-`.|
-|%l|Will print the string `-`.|
-|%L|Will print the string `-`.|
-|%P|Will print the string `-`.|
-|%{format}P|Will print the string `-`.|
-|%R|Will print the string `-`.|
-|%X|Will print the string `-`.|
-|%{VARNAME}^ti|Will print the string `-`.|
-|%{VARNAME}^to|Will print the string `-`.|
+|`%k`|Will print the string `-`.|
+|`%l`|Will print the string `-`.|
+|`%L`|Will print the string `-`.|
+|`%P`|Will print the string `-`.|
+|`%{format}P`|Will print the string `-`.|
+|`%R`|Will print the string `-`.|
+|`%X`|Will print the string `-`.|
+|`%{VARNAME}^ti`|Will print the string `-`.|
+|`%{VARNAME}^to`|Will print the string `-`.|
 
 ---
 
