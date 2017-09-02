@@ -2,9 +2,9 @@
 
 namespace Middlewares;
 
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 abstract class AccessLogFormats
 {
@@ -12,7 +12,7 @@ abstract class AccessLogFormats
      * Client IP address of the request (%a)
      *
      * @param ServerRequestInterface $request
-     * @param string|null $ipAttribute
+     * @param string|null            $ipAttribute
      *
      * @return string
      */
@@ -53,7 +53,7 @@ abstract class AccessLogFormats
      * Size of the message in bytes, excluding HTTP headers (%B, %b)
      *
      * @param MessageInterface $message
-     * @param string $default
+     * @param string           $default
      *
      * @return string
      */
@@ -67,7 +67,7 @@ abstract class AccessLogFormats
      * Will log the IP address if hostnameLookups is false.
      *
      * @param ServerRequestInterface $request
-     * @param bool $hostnameLookups
+     * @param bool                   $hostnameLookups
      *
      * @return string
      */
@@ -110,6 +110,7 @@ abstract class AccessLogFormats
      * Returns a message header
      *
      * @param MessageInterface $message
+     * @param mixed            $name
      *
      * @return string
      */
@@ -134,7 +135,7 @@ abstract class AccessLogFormats
      * Returns a cookie value (%{VARNAME}C)
      *
      * @param ServerRequestInterface $request
-     * @param string $name
+     * @param string                 $name
      *
      * @return string
      */
@@ -149,6 +150,7 @@ abstract class AccessLogFormats
      * The canonical port of the server serving the request. (%p)
      *
      * @param ServerRequestInterface $request
+     * @param mixed                  $format
      *
      * @return string
      */
@@ -158,7 +160,6 @@ abstract class AccessLogFormats
             case 'canonical':
             case 'local':
                 return $request->getUri()->getPort() ?: ('https' === $request->getUri()->getScheme() ? 443 : 80);
-
             default:
                 return '-';
         }
@@ -286,7 +287,7 @@ abstract class AccessLogFormats
      * Bytes transferred (received and sent), including request and headers (%S)
      *
      * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
+     * @param ResponseInterface      $response
      *
      * @return string
      */
@@ -299,7 +300,7 @@ abstract class AccessLogFormats
      * Get the message size (including first line and headers)
      *
      * @param MessageInterface $message
-     * @param mixed $default
+     * @param mixed            $default
      *
      * @return int|null
      */
@@ -335,8 +336,8 @@ abstract class AccessLogFormats
     /**
      * Returns the request time (%t, %{format}t)
      *
-     * @param float $begin
-     * @param float $end
+     * @param float  $begin
+     * @param float  $end
      * @param string $format
      *
      * @return string
@@ -355,13 +356,10 @@ abstract class AccessLogFormats
         switch ($format) {
             case 'sec':
                 return sprintf('[%s]', round($time));
-
             case 'msec':
                 return sprintf('[%s]', round($time * 1E3));
-
             case 'usec':
                 return sprintf('[%s]', round($time * 1E6));
-
             default:
                 return sprintf('[%s]', strftime($format, $time));
         }
@@ -370,8 +368,8 @@ abstract class AccessLogFormats
     /**
      * The time taken to serve the request. (%T, %{format}T)
      *
-     * @param float $begin
-     * @param float $end
+     * @param float  $begin
+     * @param float  $end
      * @param string $format
      *
      * @return string
@@ -381,10 +379,8 @@ abstract class AccessLogFormats
         switch ($format) {
             case 'us':
                 return (string) round(($end - $begin) * 1E6);
-
             case 'ms':
                 return (string) round(($end - $begin) * 1E3);
-
             default:
                 return (string) round($end - $begin);
         }
@@ -394,7 +390,7 @@ abstract class AccessLogFormats
      * Returns a server request attribute
      *
      * @param ServerRequestInterface $request
-     * @param string $key
+     * @param string                 $key
      *
      * @return string
      */
@@ -407,8 +403,8 @@ abstract class AccessLogFormats
      * Returns an server parameter value
      *
      * @param ServerRequestInterface $request
-     * @param string $key
-     * @param string $default
+     * @param string                 $key
+     * @param string                 $default
      *
      * @return string
      */
@@ -423,7 +419,7 @@ abstract class AccessLogFormats
      * Returns an ip from the server params
      *
      * @param ServerRequestInterface $request
-     * @param string $key
+     * @param string                 $key
      *
      * @return string
      */

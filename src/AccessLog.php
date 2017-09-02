@@ -2,12 +2,12 @@
 
 namespace Middlewares;
 
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Interop\Http\ServerMiddleware\DelegateInterface;
-use Psr\Log\LoggerInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Middlewares\AccessLogFormats as Format;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 
 class AccessLog implements MiddlewareInterface
 {
@@ -132,11 +132,11 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
-     * @param string $format
+     * @param string                 $format
      * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param float $begin
-     * @param float $end
+     * @param ResponseInterface      $response
+     * @param float                  $begin
+     * @param float                  $end
      *
      * @return string
      */
@@ -153,73 +153,50 @@ class AccessLog implements MiddlewareInterface
                 switch ($matches[1]) {
                     case '%':
                         return '%';
-
                     case 'a':
                         return Format::getClientIp($request, $this->ipAttribute);
-
                     case 'A':
                         return Format::getLocalIp($request);
-
                     case 'B':
                         return Format::getBodySize($response, '0');
-
                     case 'b':
                         return Format::getBodySize($response, '-');
-
                     case 'D':
                         return Format::getRequestDuration($begin, $end, 'ms');
-
                     case 'f':
                         return Format::getFilename($request);
-
                     case 'h':
                         return Format::getRemoteHostname($request, $this->hostnameLookups);
-
                     case 'H':
                         return Format::getProtocol($request);
-
                     case 'm':
                         return Format::getMethod($request);
-
                     case 'p':
                         return Format::getPort($request, 'canonical');
-
                     case 'q':
                         return Format::getQuery($request);
-
                     case 'r':
                         return Format::getRequestLine($request);
-
                     case 's':
                         return Format::getStatus($response);
-
                     case 't':
                         return Format::getRequestTime($begin, $end, 'begin:%d/%b/%Y:%H:%M:%S %z');
-
                     case 'T':
                         return Format::getRequestDuration($begin, $end, 's');
-
                     case 'u':
                         return Format::getRemoteUser($request);
-
                     case 'U':
                         return Format::getPath($request);
-
                     case 'v':
                         return Format::getHost($request);
-
                     case 'V':
                         return Format::getServerName($request);
-
                     case 'I':
                         return Format::getMessageSize($request, '-');
-
                     case 'O':
                         return Format::getMessageSize($response, '-');
-
                     case 'S':
                         return Format::getTransferredSize($request, $response);
-
                     //NOT IMPLEMENTED
                     case 'k':
                     case 'l':
@@ -236,11 +213,11 @@ class AccessLog implements MiddlewareInterface
     }
 
     /**
-     * @param string $format
+     * @param string                 $format
      * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param float $begin
-     * @param float $end
+     * @param ResponseInterface      $response
+     * @param float                  $begin
+     * @param float                  $end
      *
      * @return string
      */
@@ -257,31 +234,22 @@ class AccessLog implements MiddlewareInterface
                 switch ($matches[2]) {
                     case 'a':
                         return Format::getClientIp($request, $this->ipAttribute);
-
                     case 'C':
                         return Format::getCookie($request, $matches[1]);
-
                     case 'e':
                         return Format::getEnv($matches[1]);
-
                     case 'i':
                         return Format::getHeader($request, $matches[1]);
-
                     case 'n':
                         return Format::getAttribute($request, $matches[1]);
-
                     case 'o':
                         return Format::getHeader($response, $matches[1]);
-
                     case 'p':
                         return Format::getPort($request, $matches[1]);
-
                     case 't':
                         return Format::getRequestTime($begin, $end, $matches[1]);
-
                     case 'T':
                         return Format::getRequestDuration($begin, $end, $matches[1]);
-
                     //NOT IMPLEMENTED
                     case 'P':
                     default:
