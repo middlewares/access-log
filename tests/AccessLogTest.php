@@ -8,8 +8,9 @@ use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 
-class AccessLogTest extends \PHPUnit_Framework_TestCase
+class AccessLogTest extends TestCase
 {
     public function testAccessLog()
     {
