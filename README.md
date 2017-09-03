@@ -14,6 +14,7 @@ Middleware to generate access logs for each request using the [Apache's access l
 * PHP >= 5.6
 * A [PSR-7](https://packagist.org/providers/psr/http-message-implementation) http mesage implementation ([Diactoros](https://github.com/zendframework/zend-diactoros), [Guzzle](https://github.com/guzzle/psr7), [Slim](https://github.com/slimphp/Slim), etc...)
 * A [PSR-15 middleware dispatcher](https://github.com/middlewares/awesome-psr15-middlewares#dispatcher)
+* A [PSR-3 logger](https://packagist.org/search/?tags=psr-3)
 
 ## Installation
 
@@ -42,11 +43,11 @@ $response = $dispatcher->dispatch(new ServerRequest());
 
 ## Options
 
-### `__construct(Psr\Log\LoggerInterface $logger)`
+#### `__construct(Psr\Log\LoggerInterface $logger)`
 
-The logger object used to store the logs.
+The [PSR-3](http://www.php-fig.org/psr/psr-3/) logger object used to store the logs.
 
-### `format(string $format)`
+#### `format(string $format)`
 
 Custom format used in the log message. [More info about the available options](#custom-format-string). You can use also one of the following constants provided with predefined formats:
 * `AccessLog::FORMAT_COMMON` (used by default)
@@ -66,7 +67,7 @@ $dispatcher = new Dispatcher([
 ]);
 ```
 
-### `ipAttribute(string $ipAttribute)`
+#### `ipAttribute(string $ipAttribute)`
 
 By default uses the `REMOTE_ADDR` server parameter to get the client ip. This option allows to use a request attribute. Useful to combine with any ip detection middleware, for example [client-ip](https://github.com/middlewares/client-ip):
 
@@ -81,7 +82,7 @@ $dispatcher = new Dispatcher([
 ]);
 ```
 
-### `hostnameLookups(bool $hostnameLookups = true)`
+#### `hostnameLookups(bool $hostnameLookups = true)`
 
 Enable the `hostnameLookups` flag used to get the remote hostname (`%h`). (false by default)
 
