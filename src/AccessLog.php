@@ -38,6 +38,11 @@ class AccessLog implements MiddlewareInterface
     private $logger;
 
     /**
+     * @var callable
+     */
+    private $context;
+
+    /**
      * @var string
      */
     private $format = self::FORMAT_COMMON;
@@ -54,12 +59,20 @@ class AccessLog implements MiddlewareInterface
 
     /**
      * Set the LoggerInterface instance.
+     * And optional context callable
      *
      * @param LoggerInterface $logger
+     * @param callable $context
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, callable $context = null)
     {
         $this->logger = $logger;
+        if ($context === null) {
+            $context = function () {
+                return [];
+            };
+        }
+        $this->context = $context;
     }
 
     /**
@@ -122,10 +135,13 @@ class AccessLog implements MiddlewareInterface
         $message = $this->replaceConstantDirectives($message, $request, $response, $begin, $end);
         $message = $this->replaceVariableDirectives($message, $request, $response, $begin, $end);
 
+        $contextFunction = $this->context;
+        $context = $contextFunction($request, $response);
+
         if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 600) {
-            $this->logger->error($message);
+            $this->logger->error($message, $context);
         } else {
-            $this->logger->info($message);
+            $this->logger->info($message, $context);
         }
 
         return $response;
