@@ -112,11 +112,11 @@ class AccessLog implements MiddlewareInterface
     /**
      * Set context callable
      *
-     * @param bool $context
+     * @param callable $context
      *
      * @return self
      */
-    public function context(callable $context = null)
+    public function context(callable $context)
     {
         $this->context = $context;
 

@@ -86,7 +86,7 @@ $dispatcher = new Dispatcher([
 
 Enable the `hostnameLookups` flag used to get the remote hostname (`%h`). (false by default)
 
-#### `context(callable $context = null)`
+#### `context(callable $context)`
 
 By default there is no context passed into the logger. When setting this context callable it will be called each time an request is logged with both the request and response. Letting you set context to the log entry:
 
