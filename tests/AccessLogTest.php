@@ -156,12 +156,14 @@ EOT;
         $handler = new TestHandler();
         $logger = new Logger('test');
         $logger->pushHandler($handler);
-        $accessLog = (new AccessLog($logger))->context(function (ServerRequestInterface $request, ResponseInterface $response) {
-            return [
-                'client-ip' => $request->getAttribute('client-ip'),
-                'status-code' => $response->getStatusCode(),
-            ];
-        });
+        $accessLog = (new AccessLog($logger))
+            ->context(function (ServerRequestInterface $request, ResponseInterface $response) {
+                return [
+                    'client-ip' => $request->getAttribute('client-ip'),
+                    'status-code' => $response->getStatusCode(),
+                ];
+            })
+        ;
 
         Dispatcher::run([
             $accessLog ,
