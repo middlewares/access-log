@@ -86,6 +86,29 @@ $dispatcher = new Dispatcher([
 
 Enable the `hostnameLookups` flag used to get the remote hostname (`%h`). (false by default)
 
+#### `context(callable $context = null)`
+
+By default there is no context passed into the logger. When setting this context callable it will be called each time an request is logged with both the request and response. Letting you set context to the log entry:
+
+```php
+$dispatcher = new Dispatcher([
+    //detect the client ip and save it in client-ip attribute
+    new Middlewares\ClientIP(),
+    
+    // Add UUID for the request so we can trace logs later in case somethings goes wrong
+    new Middlewares\Uuid(),
+
+    // Use the data from the other two middleware and use it as context for logging
+    (new Middlewares\AccessLog($logger))
+        ->context(function (ServerRequestInterface $request, ResponseInterface $response) {
+            return [
+                'request-id' => $request->getHeaderLine('X-Uuid'),
+                'client-ip' => $request->getAttribute('client-ip'),
+            ];
+        })
+]);
+```
+
 ## Custom format string
 The format string tries to mimic the directives described in Apache Httpd server [documentation](http://httpd.apache.org/docs/2.4/mod/mod_log_config.html).
 
