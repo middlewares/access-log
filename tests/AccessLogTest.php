@@ -7,8 +7,11 @@ use Middlewares\AccessLogFormats as Format;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use Monolog\Handler\StreamHandler;
+use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class AccessLogTest extends TestCase
 {
@@ -140,5 +143,39 @@ EOT;
         $this->assertEquals('100000', Format::getRequestDuration(100, 200, 'ms'));
         $this->assertEquals('100000000', Format::getRequestDuration(100, 200, 'us'));
         $this->assertEquals('1.2.3.4', Format::getAttribute($request, 'client-ip'));
+    }
+
+    public function testContext()
+    {
+        $request = Factory::createServerRequest(
+            [],
+            'GET',
+            'https://example.com/'
+        )
+        ->withAttribute('client-ip', '1.2.3.4');
+        $handler = new TestHandler();
+        $logger = new Logger('test');
+        $logger->pushHandler($handler);
+        $accessLog = (new AccessLog($logger))
+            ->context(function (ServerRequestInterface $request, ResponseInterface $response) {
+                return [
+                    'client-ip' => $request->getAttribute('client-ip'),
+                    'status-code' => $response->getStatusCode(),
+                ];
+            })
+        ;
+
+        Dispatcher::run([
+            $accessLog ,
+            function () {
+                return Factory::createResponse(503);
+            },
+        ], $request);
+
+        $records = $handler->getRecords();
+        $this->assertSame([
+            'client-ip' => '1.2.3.4',
+            'status-code' => 503,
+        ], $records[0]['context']);
     }
 }
