@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace Middlewares;
 
@@ -361,7 +362,7 @@ abstract class AccessLogFormats
             case 'usec':
                 return sprintf('[%s]', round($time * 1E6));
             default:
-                return sprintf('[%s]', strftime($format, $time));
+                return sprintf('[%s]', strftime($format, (int) $time));
         }
     }
 
