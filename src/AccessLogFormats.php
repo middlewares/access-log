@@ -11,13 +11,8 @@ abstract class AccessLogFormats
 {
     /**
      * Client IP address of the request (%a)
-     *
-     * @param ServerRequestInterface $request
-     * @param string|null            $ipAttribute
-     *
-     * @return string
      */
-    public static function getClientIp(ServerRequestInterface $request, $ipAttribute = null)
+    public static function getClientIp(ServerRequestInterface $request, string $ipAttribute = null): string
     {
         if (!empty($ipAttribute)) {
             return self::getAttribute($request, $ipAttribute);
@@ -28,37 +23,24 @@ abstract class AccessLogFormats
 
     /**
      * Local IP-address (%A)
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getLocalIp(ServerRequestInterface $request)
+    public static function getLocalIp(ServerRequestInterface $request): string
     {
         return self::getServerParamIp($request, 'REMOTE_ADDR');
     }
 
     /**
      * Filename (%f)
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getFilename(ServerRequestInterface $request)
+    public static function getFilename(ServerRequestInterface $request): string
     {
         return self::getServerParam($request, 'PHP_SELF');
     }
 
     /**
      * Size of the message in bytes, excluding HTTP headers (%B, %b)
-     *
-     * @param MessageInterface $message
-     * @param string           $default
-     *
-     * @return string
      */
-    public static function getBodySize(MessageInterface $message, $default)
+    public static function getBodySize(MessageInterface $message, string $default): string
     {
         return (string) $message->getBody()->getSize() ?: $default;
     }
@@ -66,13 +48,8 @@ abstract class AccessLogFormats
     /**
      * Remote hostname (%h)
      * Will log the IP address if hostnameLookups is false.
-     *
-     * @param ServerRequestInterface $request
-     * @param bool                   $hostnameLookups
-     *
-     * @return string
      */
-    public static function getRemoteHostname(ServerRequestInterface $request, $hostnameLookups = false)
+    public static function getRemoteHostname(ServerRequestInterface $request, bool $hostnameLookups = false): string
     {
         $ip = self::getServerParamIp($request, 'REMOTE_ADDR');
 
@@ -85,62 +62,40 @@ abstract class AccessLogFormats
 
     /**
      * The message protocol (%H)
-     *
-     * @param MessageInterface $message
-     *
-     * @return string
      */
-    public static function getProtocol(MessageInterface $message)
+    public static function getProtocol(MessageInterface $message): string
     {
         return 'HTTP/'.$message->getProtocolVersion();
     }
 
     /**
      * The request method (%m)
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getMethod(ServerRequestInterface $request)
+    public static function getMethod(ServerRequestInterface $request): string
     {
         return strtoupper($request->getMethod());
     }
 
     /**
      * Returns a message header
-     *
-     * @param MessageInterface $message
-     * @param mixed            $name
-     *
-     * @return string
      */
-    public static function getHeader(MessageInterface $message, $name)
+    public static function getHeader(MessageInterface $message, string $name): string
     {
         return $message->getHeaderLine($name) ?: '-';
     }
 
     /**
      * Returns a environment variable (%e)
-     *
-     * @param string $name
-     *
-     * @return string
      */
-    public static function getEnv($name)
+    public static function getEnv(string $name): string
     {
         return getenv($name) ?: '-';
     }
 
     /**
      * Returns a cookie value (%{VARNAME}C)
-     *
-     * @param ServerRequestInterface $request
-     * @param string                 $name
-     *
-     * @return string
      */
-    public static function getCookie(ServerRequestInterface $request, $name)
+    public static function getCookie(ServerRequestInterface $request, string $name): string
     {
         $cookies = $request->getCookieParams();
 
@@ -149,18 +104,14 @@ abstract class AccessLogFormats
 
     /**
      * The canonical port of the server serving the request. (%p)
-     *
-     * @param ServerRequestInterface $request
-     * @param mixed                  $format
-     *
-     * @return string
      */
-    public static function getPort(ServerRequestInterface $request, $format)
+    public static function getPort(ServerRequestInterface $request, string $format): string
     {
         switch ($format) {
             case 'canonical':
             case 'local':
-                return $request->getUri()->getPort() ?: ('https' === $request->getUri()->getScheme() ? 443 : 80);
+                return (string) ($request->getUri()->getPort()
+                    ?: ('https' === $request->getUri()->getScheme() ? 443 : 80));
             default:
                 return '-';
         }
@@ -169,12 +120,8 @@ abstract class AccessLogFormats
     /**
      * The query string (%q)
      * (prepended with a ? if a query string exists, otherwise an empty string).
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getQuery(ServerRequestInterface $request)
+    public static function getQuery(ServerRequestInterface $request): string
     {
         $query = $request->getUri()->getQuery();
 
@@ -183,48 +130,32 @@ abstract class AccessLogFormats
 
     /**
      * Status. (%s)
-     *
-     * @param ResponseInterface $response
-     *
-     * @return string
      */
-    public static function getStatus(ResponseInterface $response)
+    public static function getStatus(ResponseInterface $response): string
     {
         return (string) $response->getStatusCode();
     }
 
     /**
      * Remote user if the request was authenticated. (%u)
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getRemoteUser(ServerRequestInterface $request)
+    public static function getRemoteUser(ServerRequestInterface $request): string
     {
         return self::getServerParam($request, 'REMOTE_USER');
     }
 
     /**
      * The URL path requested, not including any query string. (%U)
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getPath(ServerRequestInterface $request)
+    public static function getPath(ServerRequestInterface $request): string
     {
         return $request->getUri()->getPath() ?: '/';
     }
 
     /**
      * The canonical ServerName of the server serving the request. (%v)
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getHost(ServerRequestInterface $request)
+    public static function getHost(ServerRequestInterface $request): string
     {
         $host = $request->hasHeader('Host') ? $request->getHeaderLine('Host') : $request->getUri()->getHost();
 
@@ -233,12 +164,8 @@ abstract class AccessLogFormats
 
     /**
      * The server name according to the UseCanonicalName setting. (%V)
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getServerName(ServerRequestInterface $request)
+    public static function getServerName(ServerRequestInterface $request): string
     {
         $name = self::getServerParam($request, 'SERVER_NAME');
 
@@ -251,12 +178,8 @@ abstract class AccessLogFormats
 
     /**
      * First line of request. (%r)
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string
      */
-    public static function getRequestLine(ServerRequestInterface $request)
+    public static function getRequestLine(ServerRequestInterface $request): string
     {
         return sprintf(
             '%s %s%s %s',
@@ -269,12 +192,8 @@ abstract class AccessLogFormats
 
     /**
      * Returns the response status line
-     *
-     * @param ResponseInterface $response
-     *
-     * @return string
      */
-    public static function getResponseLine(ResponseInterface $response)
+    public static function getResponseLine(ResponseInterface $response): string
     {
         return sprintf(
             '%s %d%s',
@@ -286,15 +205,10 @@ abstract class AccessLogFormats
 
     /**
      * Bytes transferred (received and sent), including request and headers (%S)
-     *
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface      $response
-     *
-     * @return string
      */
-    public static function getTransferredSize(ServerRequestInterface $request, ResponseInterface $response)
+    public static function getTransferredSize(ServerRequestInterface $request, ResponseInterface $response): string
     {
-        return (self::getMessageSize($request, 0) + self::getMessageSize($response, 0)) ?: '-';
+        return (string) (self::getMessageSize($request, 0) + self::getMessageSize($response, 0)) ?: '-';
     }
 
     /**
@@ -336,14 +250,8 @@ abstract class AccessLogFormats
 
     /**
      * Returns the request time (%t, %{format}t)
-     *
-     * @param float  $begin
-     * @param float  $end
-     * @param string $format
-     *
-     * @return string
      */
-    public static function getRequestTime($begin, $end, $format)
+    public static function getRequestTime(float $begin, float $end, string $format): string
     {
         $time = $begin;
 
@@ -368,14 +276,8 @@ abstract class AccessLogFormats
 
     /**
      * The time taken to serve the request. (%T, %{format}T)
-     *
-     * @param float  $begin
-     * @param float  $end
-     * @param string $format
-     *
-     * @return string
      */
-    public static function getRequestDuration($begin, $end, $format)
+    public static function getRequestDuration(float $begin, float $end, string $format): string
     {
         switch ($format) {
             case 'us':
@@ -389,27 +291,16 @@ abstract class AccessLogFormats
 
     /**
      * Returns a server request attribute
-     *
-     * @param ServerRequestInterface $request
-     * @param string                 $key
-     *
-     * @return string
      */
-    public static function getAttribute(ServerRequestInterface $request, $key)
+    public static function getAttribute(ServerRequestInterface $request, string $key): string
     {
         return $request->getAttribute($key, '-');
     }
 
     /**
      * Returns an server parameter value
-     *
-     * @param ServerRequestInterface $request
-     * @param string                 $key
-     * @param string                 $default
-     *
-     * @return string
      */
-    private static function getServerParam(ServerRequestInterface $request, $key, $default = '-')
+    private static function getServerParam(ServerRequestInterface $request, string $key, string $default = '-'): string
     {
         $server = $request->getServerParams();
 
@@ -418,13 +309,8 @@ abstract class AccessLogFormats
 
     /**
      * Returns an ip from the server params
-     *
-     * @param ServerRequestInterface $request
-     * @param string                 $key
-     *
-     * @return string
      */
-    private static function getServerParamIp(ServerRequestInterface $request, $key)
+    private static function getServerParamIp(ServerRequestInterface $request, string $key): string
     {
         $ip = self::getServerParam($request, $key);
 

@@ -162,11 +162,10 @@ EOT;
                     'client-ip' => $request->getAttribute('client-ip'),
                     'status-code' => $response->getStatusCode(),
                 ];
-            })
-        ;
+            });
 
         Dispatcher::run([
-            $accessLog ,
+            $accessLog,
             function () {
                 return Factory::createResponse(503);
             },

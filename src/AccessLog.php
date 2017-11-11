@@ -60,8 +60,6 @@ class AccessLog implements MiddlewareInterface
 
     /**
      * Set the LoggerInterface instance.
-     *
-     * @param LoggerInterface $logger
      */
     public function __construct(LoggerInterface $logger)
     {
@@ -70,12 +68,8 @@ class AccessLog implements MiddlewareInterface
 
     /**
      * Set the desired format
-     *
-     * @param string $format
-     *
-     * @return self
      */
-    public function format($format)
+    public function format(string $format): self
     {
         $this->format = $format;
 
@@ -84,12 +78,8 @@ class AccessLog implements MiddlewareInterface
 
     /**
      * Set the attribute name to get the client ip.
-     *
-     * @param string $ipAttribute
-     *
-     * @return self
      */
-    public function ipAttribute($ipAttribute)
+    public function ipAttribute(string $ipAttribute): self
     {
         $this->ipAttribute = $ipAttribute;
 
@@ -98,12 +88,8 @@ class AccessLog implements MiddlewareInterface
 
     /**
      * Set the hostname lookups flag
-     *
-     * @param bool $hostnameLookups
-     *
-     * @return self
      */
-    public function hostnameLookups($hostnameLookups = true)
+    public function hostnameLookups(bool $hostnameLookups = true): self
     {
         $this->hostnameLookups = $hostnameLookups;
 
@@ -112,12 +98,8 @@ class AccessLog implements MiddlewareInterface
 
     /**
      * Set context callable
-     *
-     * @param callable $context
-     *
-     * @return self
      */
-    public function context(callable $context)
+    public function context(callable $context): self
     {
         $this->context = $context;
 
@@ -126,11 +108,6 @@ class AccessLog implements MiddlewareInterface
 
     /**
      * Process a server request and return a response.
-     *
-     * @param ServerRequestInterface  $request
-     * @param RequestHandlerInterface $handler
-     *
-     * @return ResponseInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -158,22 +135,13 @@ class AccessLog implements MiddlewareInterface
         return $response;
     }
 
-    /**
-     * @param string                 $format
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface      $response
-     * @param float                  $begin
-     * @param float                  $end
-     *
-     * @return string
-     */
     private function replaceConstantDirectives(
-        $format,
+        string $format,
         ServerRequestInterface $request,
         ResponseInterface $response,
-        $begin,
-        $end
-    ) {
+        float $begin,
+        float $end
+    ): string {
         return preg_replace_callback(
             '/%(?:[<>])?([%aABbDfhHklLmpPqrRstTuUvVXIOS])/',
             function (array $matches) use ($request, $response, $begin, $end) {
@@ -249,12 +217,12 @@ class AccessLog implements MiddlewareInterface
      * @return string
      */
     private function replaceVariableDirectives(
-        $format,
+        string $format,
         ServerRequestInterface $request,
         ResponseInterface $response,
-        $begin,
-        $end
-    ) {
+        float $begin,
+        float $end
+    ): string {
         return preg_replace_callback(
             '/%(?:[<>])?{([^}]+)}([aCeinopPtT])/',
             function (array $matches) use ($request, $response, $begin, $end) {
