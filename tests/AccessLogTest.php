@@ -22,9 +22,9 @@ class AccessLogTest extends TestCase
         $logger->pushHandler(new StreamHandler($logs));
 
         $request = Factory::createServerRequest(
-            ['REMOTE_ADDR' => '0.0.0.0'],
             'GET',
-            'http://hello.co/user'
+            'http://hello.co/user',
+            ['REMOTE_ADDR' => '0.0.0.0']
         )
         ->withHeader('Referer', 'http://hello.org')
         ->withHeader('User-Agent', 'curl/7');
@@ -65,7 +65,7 @@ class AccessLogTest extends TestCase
             function () {
                 return Factory::createResponse(503);
             },
-        ], Factory::createServerRequest([], 'PUT', 'https://domain.com')->withAttribute('client-ip', '1.1.1.1'));
+        ], Factory::createServerRequest('PUT', 'https://domain.com')->withAttribute('client-ip', '1.1.1.1'));
 
         rewind($logs);
 
@@ -92,13 +92,13 @@ EOT;
     public function testFormats()
     {
         $request = Factory::createServerRequest(
+            'PUT',
+            'https://domain.com/path?hello=world',
             [
                 'REMOTE_ADDR' => '0.0.0.0',
                 'PHP_SELF' => 'index.php',
                 'REMOTE_USER' => 'username',
-            ],
-            'PUT',
-            'https://domain.com/path?hello=world'
+            ]
         )
         ->withAttribute('client-ip', '1.2.3.4')
         ->withHeader('Referer', 'http://example.com')
@@ -148,7 +148,6 @@ EOT;
     public function testContext()
     {
         $request = Factory::createServerRequest(
-            [],
             'GET',
             'https://example.com/'
         )
