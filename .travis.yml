@@ -1,26 +1,13 @@
 language: php
 sudo: false
 
-matrix:
-  fast_finish: true
-
-  include:
-    - php: 7.1
-      env: PHPSTAN=1
-
-    - php: 7.2
-      env: PHPSTAN=1
-
 php:
   - 7.0
   - 7.1
   - 7.2
 
 before_script:
-  - composer self-update
   - composer install -n
-  - "if [[ $PHPSTAN = 1 ]]; then composer require --dev phpstan/phpstan ; fi"
 
 script:
   - composer test
-  - "if [[ $PHPSTAN = 1 ]]; then vendor/bin/phpstan analyse --no-progress --level 7 src ; fi"
