@@ -126,7 +126,11 @@ class AccessLog implements MiddlewareInterface
             $context = $contextFunction($request, $response);
         }
 
-        if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 600) {
+        $statusCode = $response->getStatusCode();
+
+        if ($statusCode >= 400 && $statusCode < 500) {
+            $this->logger->warning($message, $context);
+        } elseif ($statusCode >= 500 && $statusCode < 600) {
             $this->logger->error($message, $context);
         } else {
             $this->logger->info($message, $context);

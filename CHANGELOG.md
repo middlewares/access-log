@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Use `phpstan` as a dev dependency to detect bugs
 
+### Added
+
+- Improved usage of log levels, allowing people to have more control on what goes
+  into their production log handler
+
 ## [1.1.0] - 2018-08-04
 
 ### Added
