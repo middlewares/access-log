@@ -67,6 +67,14 @@ class AccessLogTest extends TestCase
             },
         ], Factory::createServerRequest('PUT', 'https://domain.com')->withAttribute('client-ip', '1.1.1.1'));
 
+        Dispatcher::run([
+            new AccessLog($logger),
+
+            function () {
+                return Factory::createResponse(404);
+            },
+        ], $request);
+
         rewind($logs);
 
         $string = stream_get_contents($logs);
@@ -84,6 +92,7 @@ class AccessLogTest extends TestCase
 [date] test.INFO: 0.0.0.0 - - [date] “GET /user HTTP/1.1” 200 33 “http://hello.org” “curl/7” [] []
 [date] test.INFO: hello.co:80 0.0.0.0 - - [date] “GET /user HTTP/1.1” 200 33 “http://hello.org” “curl/7" [] []
 [date] test.ERROR: 1.1.1.1 - - [date] "PUT / HTTP/1.1" 503 - "-" "-" [] []
+[date] test.WARNING: 0.0.0.0 - - [date] "GET /user HTTP/1.1" 404 - [] []
 EOT;
 
         $this->assertEquals($expect, $string);
