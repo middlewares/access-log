@@ -12,7 +12,7 @@ Middleware to generate access logs for each request using the [Apache's access l
 ## Requirements
 
 * PHP >= 7.0
-* A [PSR-7](https://packagist.org/providers/psr/http-message-implementation) http message implementation ([Diactoros](https://github.com/zendframework/zend-diactoros), [Guzzle](https://github.com/guzzle/psr7), [Slim](https://github.com/slimphp/Slim), etc...)
+* A [PSR-7 http library](https://github.com/middlewares/awesome-psr15-middlewares#psr-7-implementations)
 * A [PSR-15 middleware dispatcher](https://github.com/middlewares/awesome-psr15-middlewares#dispatcher)
 * A [PSR-3 logger](https://packagist.org/search/?tags=psr-3)
 
@@ -41,13 +41,19 @@ $dispatcher = new Dispatcher([
 $response = $dispatcher->dispatch(new ServerRequest());
 ```
 
-## Options
+## API
 
-#### `__construct(Psr\Log\LoggerInterface $logger)`
+### Constructor
 
-The [PSR-3](http://www.php-fig.org/psr/psr-3/) logger object used to store the logs.
+Type | Required | Description
+-----|----------|------------
+`Psr\Log\LoggerInterface $logger` | Yes | The [PSR-3](http://www.php-fig.org/psr/psr-3/) logger object used to store the logs.
 
-#### `format(string $format)`
+### format
+
+Type | Required | Description
+-----|----------|------------
+`string` | Yes | The format used
 
 Custom format used in the log message. [More info about the available options](#custom-format-string). You can use also one of the following constants provided with predefined formats:
 * `AccessLog::FORMAT_COMMON` (used by default)
@@ -67,7 +73,11 @@ $dispatcher = new Dispatcher([
 ]);
 ```
 
-#### `ipAttribute(string $ipAttribute)`
+### ipAttribute
+
+Type | Required | Description
+-----|----------|------------
+`string` | Yes | The attribute name
 
 By default uses the `REMOTE_ADDR` server parameter to get the client ip. This option allows to use a request attribute. Useful to combine with any ip detection middleware, for example [client-ip](https://github.com/middlewares/client-ip):
 
@@ -82,11 +92,19 @@ $dispatcher = new Dispatcher([
 ]);
 ```
 
-#### `hostnameLookups(bool $hostnameLookups = true)`
+### hostnameLookups
 
-Enable the `hostnameLookups` flag used to get the remote hostname (`%h`). (false by default)
+Type | Required | Description
+-----|----------|------------
+`bool` | False  | `true` to enable, `false` to disable.
 
-#### `context(callable $context)`
+Enable the `hostnameLookups` flag used to get the remote hostname (`%h`). By default is `false`.
+
+### context
+
+Type | Required | Description
+-----|----------|------------
+`callable` | True  | Callable returning the logger context
 
 By default there is no context passed into the logger. When setting this context callable it will be called each time an request is logged with both the request and response. Letting you set context to the log entry:
 
