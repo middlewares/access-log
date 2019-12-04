@@ -214,12 +214,9 @@ abstract class AccessLogFormats
     /**
      * Get the message size (including first line and headers)
      *
-     * @param MessageInterface $message
-     * @param mixed            $default
-     *
-     * @return int|null
+     * @param mixed $default
      */
-    public static function getMessageSize(MessageInterface $message, $default = null)
+    public static function getMessageSize(MessageInterface $message, $default = null): ?int
     {
         $bodySize = $message->getBody()->getSize();
 
