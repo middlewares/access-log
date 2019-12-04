@@ -211,15 +211,6 @@ class AccessLog implements MiddlewareInterface
         );
     }
 
-    /**
-     * @param string                 $format
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface      $response
-     * @param float                  $begin
-     * @param float                  $end
-     *
-     * @return string
-     */
     private function replaceVariableDirectives(
         string $format,
         ServerRequestInterface $request,

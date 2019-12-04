@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.0] - Unreleased
+### Removed
+- Support for PHP 7.0 and 7.1
+
 ## [1.2.0] - 2019-02-28
 ### Added
 - Improved usage of log levels, allowing people to have more control on what goes
@@ -110,6 +114,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 0.1.0 - 2016-10-09
 First version
 
+[2.0.0]: https://github.com/middlewares/access-log/compare/v1.2.0...HEAD
 [1.2.0]: https://github.com/middlewares/access-log/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/middlewares/access-log/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/middlewares/access-log/compare/v0.10.0...v1.0.0

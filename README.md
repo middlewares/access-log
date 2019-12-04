@@ -5,13 +5,12 @@
 [![Build Status][ico-travis]][link-travis]
 [![Quality Score][ico-scrutinizer]][link-scrutinizer]
 [![Total Downloads][ico-downloads]][link-downloads]
-[![SensioLabs Insight][ico-sensiolabs]][link-sensiolabs]
 
 Middleware to generate access logs for each request using the [Apache's access log format](https://httpd.apache.org/docs/2.4/logs.html#accesslog). This middleware requires a [Psr log implementation](https://packagist.org/providers/psr/log-implementation), for example [monolog](https://github.com/Seldaek/monolog).
 
 ## Requirements
 
-* PHP >= 7.0
+* PHP >= 7.2
 * A [PSR-7 http library](https://github.com/middlewares/awesome-psr15-middlewares#psr-7-implementations)
 * A [PSR-15 middleware dispatcher](https://github.com/middlewares/awesome-psr15-middlewares#dispatcher)
 * A [PSR-3 logger](https://packagist.org/search/?tags=psr-3)
@@ -41,22 +40,15 @@ $dispatcher = new Dispatcher([
 $response = $dispatcher->dispatch(new ServerRequest());
 ```
 
-## API
+## Usage
 
-### Constructor
-
-Type | Required | Description
------|----------|------------
-`Psr\Log\LoggerInterface $logger` | Yes | The [PSR-3](http://www.php-fig.org/psr/psr-3/) logger object used to store the logs.
+This middleware uses [PSR-3](http://www.php-fig.org/psr/psr-3/) logger standard to store the logs, so you need to pass a `Psr\Log\LoggerInterface` instance to the constructor.
 
 ### format
 
-Type | Required | Description
------|----------|------------
-`string` | Yes | The format used
+This option allows to define the format used to save the log messages. You can create your own format ([More info about the available options](#custom-format-string)) ou use one of the following constants provided with predefined formats:
 
-Custom format used in the log message. [More info about the available options](#custom-format-string). You can use also one of the following constants provided with predefined formats:
-* `AccessLog::FORMAT_COMMON` (used by default)
+* `AccessLog::FORMAT_COMMON` (Used by default)
 * `AccessLog::FORMAT_COMMON_VHOST`
 * `AccessLog::FORMAT_COMBINED`
 * `AccessLog::FORMAT_REFERER`
@@ -67,51 +59,39 @@ Custom format used in the log message. [More info about the available options](#
 * `AccessLog::FORMAT_VHOST_COMBINED_DEBIAN`
 
 ```php
-$dispatcher = new Dispatcher([
-    (new Middlewares\AccessLog($logger))
-        ->format(Middlewares\AccessLog::FORMAT_COMMON_VHOST)
-]);
+use Middlewares\AccessLog;
+
+$format = AccessLog::FORMAT_COMMON_VHOST;
+
+$accessLog = (new AccessLog($logger))->format($format);
 ```
 
 ### ipAttribute
 
-Type | Required | Description
------|----------|------------
-`string` | Yes | The attribute name
-
 By default uses the `REMOTE_ADDR` server parameter to get the client ip. This option allows to use a request attribute. Useful to combine with any ip detection middleware, for example [client-ip](https://github.com/middlewares/client-ip):
 
 ```php
-$dispatcher = new Dispatcher([
-    //detect the client ip and save it in client-ip attribute
-    new Middlewares\ClientIP(),
+Dispatcher::run([
+    //detect the client ip and save it in "ip" attribute
+    (new Middlewares\ClientIP())->attribute('ip'),
 
     //use that attribute
-    (new Middlewares\AccessLog($logger))
-        ->ipAttribute('client-ip')
+    (new Middlewares\AccessLog($logger))->ipAttribute('ip')
 ]);
 ```
 
 ### hostnameLookups
 
-Type | Required | Description
------|----------|------------
-`bool` | False  | `true` to enable, `false` to disable.
-
 Enable the `hostnameLookups` flag used to get the remote hostname (`%h`). By default is `false`.
 
 ### context
-
-Type | Required | Description
------|----------|------------
-`callable` | True  | Callable returning the logger context
 
 By default there is no context passed into the logger. When setting this context callable it will be called each time an request is logged with both the request and response. Letting you set context to the log entry:
 
 ```php
 $dispatcher = new Dispatcher([
-    //detect the client ip and save it in client-ip attribute
-    new Middlewares\ClientIP(),
+    //detect the client ip and save it in ip attribute
+    (new Middlewares\ClientIP())->attribute('ip'),
     
     // Add UUID for the request so we can trace logs later in case somethings goes wrong
     new Middlewares\Uuid(),
@@ -121,7 +101,7 @@ $dispatcher = new Dispatcher([
         ->context(function (ServerRequestInterface $request, ResponseInterface $response) {
             return [
                 'request-id' => $request->getHeaderLine('X-Uuid'),
-                'client-ip' => $request->getAttribute('client-ip'),
+                'client-ip' => $request->getAttribute('ip'),
             ];
         })
 ]);
