@@ -99,7 +99,7 @@ abstract class AccessLogFormats
     {
         $cookies = $request->getCookieParams();
 
-        return isset($cookies[$name]) ? $cookies[$name] : '-';
+        return $cookies[$name] ?? '-';
     }
 
     /**
