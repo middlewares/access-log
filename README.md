@@ -171,9 +171,7 @@ The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
 [ico-ga]: https://github.com/middlewares/access-log/workflows/testing/badge.svg
 [ico-downloads]: https://img.shields.io/packagist/dt/middlewares/access-log.svg?style=flat-square
-[ico-sensiolabs]: https://img.shields.io/sensiolabs/i/7595894d-e4ae-4815-8c75-63bdb31c4833.svg?style=flat-square
 
 [link-packagist]: https://packagist.org/packages/middlewares/access-log
-[link-scrutinizer]: https://scrutinizer-ci.com/g/middlewares/access-log
 [link-downloads]: https://packagist.org/packages/middlewares/access-log
 [link-sensiolabs]: https://insight.sensiolabs.com/projects/7595894d-e4ae-4815-8c75-63bdb31c4833
