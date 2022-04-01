@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.1.0] - 2022-04-01
+### Added
+- Added 3rd argument to context function: $message [#20]
+
+### Fixed
+- Make tests more strict [#19]
+
 ## [2.0.0] - 2020-12-02
 ### Added
 - Support for PHP 8
@@ -114,9 +121,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Updated to `http-interop/http-middleware#0.3`
 
-## 0.1.0 - 2016-10-09
+## [0.1.0] - 2016-10-09
 First version
 
+[#19]: https://github.com/middlewares/access-log/issues/19
+[#20]: https://github.com/middlewares/access-log/issues/20
+
+[2.1.0]: https://github.com/middlewares/access-log/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/middlewares/access-log/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/middlewares/access-log/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/middlewares/access-log/compare/v1.0.0...v1.1.0
@@ -132,3 +143,4 @@ First version
 [0.4.0]: https://github.com/middlewares/access-log/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/middlewares/access-log/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/middlewares/access-log/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/middlewares/access-log/releases/tag/v0.1.0
