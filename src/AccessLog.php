@@ -123,7 +123,7 @@ class AccessLog implements MiddlewareInterface
 
         if ($this->context !== null) {
             $contextFunction = $this->context;
-            $context = $contextFunction($request, $response);
+            $context = $contextFunction($request, $response, $message);
         }
 
         $statusCode = $response->getStatusCode();
