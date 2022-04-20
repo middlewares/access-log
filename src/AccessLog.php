@@ -191,9 +191,11 @@ class AccessLog implements MiddlewareInterface
                     case 'V':
                         return Format::getServerName($request);
                     case 'I':
-                        return Format::getMessageSize($request, '-');
+                        $messageSize = Format::getMessageSize($request);
+                        return null === $messageSize ? '-' : (string) $messageSize;
                     case 'O':
-                        return Format::getMessageSize($response, '-');
+                        $messageSize = Format::getMessageSize($response);
+                        return null === $messageSize ? '-' : (string) $messageSize;
                     case 'S':
                         return Format::getTransferredSize($request, $response);
                     //NOT IMPLEMENTED
