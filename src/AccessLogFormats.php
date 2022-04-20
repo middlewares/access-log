@@ -216,7 +216,7 @@ abstract class AccessLogFormats
      *
      * @param mixed $default
      */
-    public static function getMessageSize(MessageInterface $message, $default = null): ?int
+    public static function getMessageSize(MessageInterface $message, int $default = null): ?int
     {
         $bodySize = $message->getBody()->getSize();
 
