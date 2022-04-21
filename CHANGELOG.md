@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.1.1] - 2022-04-21
+### Fixed
+- Removed function `strftime`, deprecated in PHP 8.1 [#22].
+- Fix message size return when body size is unknown [#21].
+
 ## [2.1.0] - 2022-04-01
 ### Added
 - Added 3rd argument to context function: $message [#20]
@@ -126,7 +131,10 @@ First version
 
 [#19]: https://github.com/middlewares/access-log/issues/19
 [#20]: https://github.com/middlewares/access-log/issues/20
+[#21]: https://github.com/middlewares/access-log/issues/21
+[#22]: https://github.com/middlewares/access-log/issues/22
 
+[2.1.1]: https://github.com/middlewares/access-log/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/middlewares/access-log/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/middlewares/access-log/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/middlewares/access-log/compare/v1.1.0...v1.2.0
