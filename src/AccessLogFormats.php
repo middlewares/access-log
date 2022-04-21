@@ -267,7 +267,7 @@ abstract class AccessLogFormats
             case 'usec':
                 return sprintf('[%s]', round($time * 1E6));
             default:
-                return sprintf('[%s]', strftime($format, (int) $time));
+                return sprintf('[%s]', date($format, (int) $time));
         }
     }
 
