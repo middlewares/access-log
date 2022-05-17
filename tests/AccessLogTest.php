@@ -148,6 +148,7 @@ EOT;
         $this->assertEquals('[100]', Format::getRequestTime(100, 200, 'sec'));
         $this->assertEquals('[100000]', Format::getRequestTime(100, 200, 'msec'));
         $this->assertEquals('[100000000]', Format::getRequestTime(100, 200, 'usec'));
+        $this->assertEquals('[01/Jan/1970:00:01:40 +0000]', Format::getRequestTime(100, 200, 'begin:d/M/Y:H:i:s O'));
         $this->assertEquals('100', Format::getRequestDuration(100, 200, 'sec'));
         $this->assertEquals('100000', Format::getRequestDuration(100, 200, 'ms'));
         $this->assertEquals('100000000', Format::getRequestDuration(100, 200, 'us'));
