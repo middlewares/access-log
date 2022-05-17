@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.1.2] - 2022-05-17
+### Fixed
+- Datetime format [#23].
+
 ## [2.1.1] - 2022-04-21
 ### Fixed
 - Removed function `strftime`, deprecated in PHP 8.1 [#22].
@@ -133,7 +137,9 @@ First version
 [#20]: https://github.com/middlewares/access-log/issues/20
 [#21]: https://github.com/middlewares/access-log/issues/21
 [#22]: https://github.com/middlewares/access-log/issues/22
+[#23]: https://github.com/middlewares/access-log/issues/23
 
+[2.1.2]: https://github.com/middlewares/access-log/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/middlewares/access-log/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/middlewares/access-log/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/middlewares/access-log/compare/v1.2.0...v2.0.0
