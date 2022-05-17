@@ -179,7 +179,7 @@ class AccessLog implements MiddlewareInterface
                     case 's':
                         return Format::getStatus($response);
                     case 't':
-                        return Format::getRequestTime($begin, $end, 'begin:%d/%b/%Y:%H:%M:%S %z');
+                        return Format::getRequestTime($begin, $end, 'begin:d/M/Y:H:i:s O');
                     case 'T':
                         return Format::getRequestDuration($begin, $end, 's');
                     case 'u':
