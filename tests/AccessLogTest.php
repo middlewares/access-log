@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Middlewares\Tests;
 
 use Middlewares\AccessLog;
@@ -15,7 +17,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class AccessLogTest extends TestCase
 {
-    public function testAccessLog()
+    public function testAccessLog(): void
     {
         $logs = fopen('php://temp', 'r+');
         $logger = new Logger('test');
@@ -98,7 +100,7 @@ EOT;
         $this->assertEquals($expect, $string);
     }
 
-    public function testFormats()
+    public function testFormats(): void
     {
         $request = Factory::createServerRequest(
             'PUT',
@@ -155,7 +157,7 @@ EOT;
         $this->assertEquals('1.2.3.4', Format::getAttribute($request, 'client-ip'));
     }
 
-    public function testContext()
+    public function testContext(): void
     {
         $request = Factory::createServerRequest(
             'GET',
