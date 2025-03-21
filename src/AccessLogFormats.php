@@ -12,7 +12,7 @@ abstract class AccessLogFormats
     /**
      * Client IP address of the request (%a)
      */
-    public static function getClientIp(ServerRequestInterface $request, string $ipAttribute = null): string
+    public static function getClientIp(ServerRequestInterface $request, ?string $ipAttribute = null): string
     {
         if (!empty($ipAttribute)) {
             return self::getAttribute($request, $ipAttribute);
@@ -54,7 +54,7 @@ abstract class AccessLogFormats
         $ip = self::getServerParamIp($request, 'REMOTE_ADDR');
 
         if ($ip !== '-' && $hostnameLookups) {
-            return gethostbyaddr($ip);
+            return (string) gethostbyaddr($ip);
         }
 
         return $ip;
@@ -214,9 +214,9 @@ abstract class AccessLogFormats
     /**
      * Get the message size (including first line and headers)
      *
-     * @param mixed $default
+     * @param int|null $default
      */
-    public static function getMessageSize(MessageInterface $message, int $default = null): ?int
+    public static function getMessageSize(MessageInterface $message, ?int $default = null): ?int
     {
         $bodySize = $message->getBody()->getSize();
 

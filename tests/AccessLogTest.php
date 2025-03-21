@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Middlewares\Tests;
 
 use Middlewares\AccessLog;
@@ -15,8 +17,9 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class AccessLogTest extends TestCase
 {
-    public function testAccessLog()
+    public function testAccessLog(): void
     {
+        /** @var resource $logs */
         $logs = fopen('php://temp', 'r+');
         $logger = new Logger('test');
         $logger->pushHandler(new StreamHandler($logs));
@@ -79,7 +82,7 @@ class AccessLogTest extends TestCase
 
         $string = stream_get_contents($logs);
 
-        $string = preg_replace('/\[[^\]]+\]/', '[date]', trim($string));
+        $string = preg_replace('/\[[^\]]+\]/', '[date]', trim((string) $string));
         $expect = <<<'EOT'
 [date] test.INFO: 0.0.0.0 - - [date] "GET /user HTTP/1.1" 200 12 [] []
 [date] test.INFO: 0.0.0.0 - - [date] "GET /user HTTP/1.1" 200 12 [] []
@@ -98,7 +101,7 @@ EOT;
         $this->assertEquals($expect, $string);
     }
 
-    public function testFormats()
+    public function testFormats(): void
     {
         $request = Factory::createServerRequest(
             'PUT',
@@ -155,7 +158,7 @@ EOT;
         $this->assertEquals('1.2.3.4', Format::getAttribute($request, 'client-ip'));
     }
 
-    public function testContext()
+    public function testContext(): void
     {
         $request = Factory::createServerRequest(
             'GET',
