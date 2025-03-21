@@ -146,6 +146,7 @@ class AccessLog implements MiddlewareInterface
         float $begin,
         float $end
     ): string {
+        // @phpstan-ignore-next-line
         return preg_replace_callback(
             '/%(?:[<>])?([%aABbDfhHklLmpPqrRstTuUvVXIOS])/',
             function (array $matches) use ($request, $response, $begin, $end) {
@@ -222,6 +223,7 @@ class AccessLog implements MiddlewareInterface
         float $begin,
         float $end
     ): string {
+        // @phpstan-ignore-next-line
         return preg_replace_callback(
             '/%(?:[<>])?{([^}]+)}([aCeinopPtT])/',
             function (array $matches) use ($request, $response, $begin, $end) {

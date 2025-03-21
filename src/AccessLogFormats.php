@@ -54,7 +54,7 @@ abstract class AccessLogFormats
         $ip = self::getServerParamIp($request, 'REMOTE_ADDR');
 
         if ($ip !== '-' && $hostnameLookups) {
-            return gethostbyaddr($ip);
+            return (string) gethostbyaddr($ip);
         }
 
         return $ip;

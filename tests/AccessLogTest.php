@@ -19,6 +19,7 @@ class AccessLogTest extends TestCase
 {
     public function testAccessLog(): void
     {
+        /** @var resource $logs */
         $logs = fopen('php://temp', 'r+');
         $logger = new Logger('test');
         $logger->pushHandler(new StreamHandler($logs));
@@ -81,7 +82,7 @@ class AccessLogTest extends TestCase
 
         $string = stream_get_contents($logs);
 
-        $string = preg_replace('/\[[^\]]+\]/', '[date]', trim($string));
+        $string = preg_replace('/\[[^\]]+\]/', '[date]', trim((string) $string));
         $expect = <<<'EOT'
 [date] test.INFO: 0.0.0.0 - - [date] "GET /user HTTP/1.1" 200 12 [] []
 [date] test.INFO: 0.0.0.0 - - [date] "GET /user HTTP/1.1" 200 12 [] []
