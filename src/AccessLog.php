@@ -15,23 +15,23 @@ class AccessLog implements MiddlewareInterface
     /**
      * @link http://httpd.apache.org/docs/2.4/mod/mod_log_config.html#examples
      */
-    const FORMAT_COMMON = '%h %l %u %t "%r" %>s %b';
-    const FORMAT_COMMON_VHOST = '%v %h %l %u %t "%r" %>s %b';
-    const FORMAT_COMBINED = '%h %l %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i"';
-    const FORMAT_REFERER = '%{Referer}i -> %U';
-    const FORMAT_AGENT = '%{User-Agent}i';
+    public const FORMAT_COMMON = '%h %l %u %t "%r" %>s %b';
+    public const FORMAT_COMMON_VHOST = '%v %h %l %u %t "%r" %>s %b';
+    public const FORMAT_COMBINED = '%h %l %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i"';
+    public const FORMAT_REFERER = '%{Referer}i -> %U';
+    public const FORMAT_AGENT = '%{User-Agent}i';
 
     /**
      * @link https://httpd.apache.org/docs/2.4/logs.html#virtualhost
      */
-    const FORMAT_VHOST = '%v %l %u %t "%r" %>s %b';
+    public const FORMAT_VHOST = '%v %l %u %t "%r" %>s %b';
 
     /**
      * @link https://anonscm.debian.org/cgit/pkg-apache/apache2.git/tree/debian/config-dir/apache2.conf.in#n212
      */
-    const FORMAT_COMMON_DEBIAN = '%h %l %u %t “%r” %>s %O';
-    const FORMAT_COMBINED_DEBIAN = '%h %l %u %t “%r” %>s %O “%{Referer}i” “%{User-Agent}i”';
-    const FORMAT_VHOST_COMBINED_DEBIAN = '%v:%p %h %l %u %t “%r” %>s %O “%{Referer}i” “%{User-Agent}i"';
+    public const FORMAT_COMMON_DEBIAN = '%h %l %u %t “%r” %>s %O';
+    public const FORMAT_COMBINED_DEBIAN = '%h %l %u %t “%r” %>s %O “%{Referer}i” “%{User-Agent}i”';
+    public const FORMAT_VHOST_COMBINED_DEBIAN = '%v:%p %h %l %u %t “%r” %>s %O “%{Referer}i” “%{User-Agent}i"';
 
     /**
      * @var LoggerInterface The router container
@@ -146,6 +146,7 @@ class AccessLog implements MiddlewareInterface
         float $begin,
         float $end
     ): string {
+        // @phpstan-ignore-next-line
         return preg_replace_callback(
             '/%(?:[<>])?([%aABbDfhHklLmpPqrRstTuUvVXIOS])/',
             function (array $matches) use ($request, $response, $begin, $end) {
@@ -192,13 +193,15 @@ class AccessLog implements MiddlewareInterface
                         return Format::getServerName($request);
                     case 'I':
                         $messageSize = Format::getMessageSize($request);
+
                         return null === $messageSize ? '-' : (string) $messageSize;
                     case 'O':
                         $messageSize = Format::getMessageSize($response);
+
                         return null === $messageSize ? '-' : (string) $messageSize;
                     case 'S':
                         return Format::getTransferredSize($request, $response);
-                    //NOT IMPLEMENTED
+                        //NOT IMPLEMENTED
                     case 'k':
                     case 'l':
                     case 'L':
@@ -220,6 +223,7 @@ class AccessLog implements MiddlewareInterface
         float $begin,
         float $end
     ): string {
+        // @phpstan-ignore-next-line
         return preg_replace_callback(
             '/%(?:[<>])?{([^}]+)}([aCeinopPtT])/',
             function (array $matches) use ($request, $response, $begin, $end) {
@@ -242,7 +246,7 @@ class AccessLog implements MiddlewareInterface
                         return Format::getRequestTime($begin, $end, $matches[1]);
                     case 'T':
                         return Format::getRequestDuration($begin, $end, $matches[1]);
-                    //NOT IMPLEMENTED
+                        //NOT IMPLEMENTED
                     case 'P':
                     default:
                         return '-';
